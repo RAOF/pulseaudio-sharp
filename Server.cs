@@ -18,13 +18,59 @@
 // 
 
 using System;
+using System.Runtime.InteropServices;
+using GLib;
 
 namespace Pulseaudio
 {
     public class Server
     {
+        IntPtr context;
+        IntPtr pa_mainloop;
+        
         public Server ()
         {
+            pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
+            context = pa_context_new (pa_glib_mainloop_get_api (pa_mainloop), "LibFoo");
+            pa_context_connect (context, null, ContextConnectionFlags.None, new IntPtr (0));
         }
+
+        public UInt32 ServerAPI {
+            get {
+                return pa_context_get_server_protocol_version (context);
+            }
+        }
+        
+        public string Version {
+            get {
+                return "pulseaudio 0.9.16-test2";
+            }
+        }
+
+        [Flags]
+        public enum ContextConnectionFlags
+        {
+            None = 0,
+            NoAutoSpawn = 1,
+            NoFail= 2
+        }
+        
+        
+        [DllImport ("glib-2.0")]
+        private static extern IntPtr g_main_context_default ();
+
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_new (IntPtr mainloop_api, string appName);
+        [DllImport ("pulse")]
+        private static extern int pa_context_connect (IntPtr context, string server, ContextConnectionFlags flags, 
+                                                      IntPtr spawnApi);
+        [DllImport ("pulse")]
+        private static extern UInt32 pa_context_get_server_protocol_version (IntPtr context);
+        [DllImport ("pulse-mainloop-glib")]
+        private static extern IntPtr pa_glib_mainloop_new (IntPtr main_context);
+        [DllImport ("pulse-mainloop-glib")]
+        private static extern IntPtr pa_glib_mainloop_get_api (IntPtr pa_mainloop);
+        [DllImport ("pulse-mainloop-glib")]
+        private static extern void pa_glib_mainloop_free (IntPtr pa_mainloop);
     }
 }

@@ -19,18 +19,35 @@
 
 using System;
 using NUnit.Framework;
+using GLib;
 
 namespace Pulseaudio
 {
-    
-    
     [TestFixture()]
     public class TestServer
     {
+        private void MainLoopIterate ()
+        {
+            while (GLib.MainContext.Iteration (false))
+            { }
+        }
         
         [Test()]
-        public void TestCase()
+        // TODO: running this test is going to break frequently, because it's relying on the system-wide pulseaudio
+        // server.  It'd be good to spawn a known-version server of our very own.
+        public void TestGetServerVersion()
         {
+            Server s = new Server ();
+            MainLoopIterate ();
+            Assert.AreEqual ("pulseaudio 0.9.16-test2", s.Version);
+        }
+
+        [Test()]
+        public void TestGetServerAPIVersion ()
+        {
+            Server s = new Server ();
+            MainLoopIterate ();
+            Assert.AreEqual (16, s.ServerAPI);
         }
     }
 }
