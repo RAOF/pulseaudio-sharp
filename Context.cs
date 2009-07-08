@@ -32,6 +32,10 @@ namespace Pulseaudio
         {
             pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
             context = pa_context_new (pa_glib_mainloop_get_api (pa_mainloop), "LibFoo");
+        }
+
+        public void Connect ()
+        {
             pa_context_connect (context, null, ContextConnectionFlags.None, new IntPtr (0));
         }
 

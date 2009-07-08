@@ -46,6 +46,7 @@ namespace Pulseaudio
         public void TestGetServerAPIVersion ()
         {
             Context s = new Context ();
+            s.Connect ();
             MainLoopIterate ();
             Assert.AreEqual (16, s.ServerAPI);
         }
