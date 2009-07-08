@@ -32,7 +32,7 @@ namespace Pulseaudio
 
     public class GLibMainLoop : MainLoop, IDisposable
     {
-        IntPtr pa_mainloop;
+        IntPtr pa_mainloop = new IntPtr (0);
 
         public GLibMainLoop ()
         {
@@ -41,12 +41,16 @@ namespace Pulseaudio
         
         public IntPtr GetAPI ()
         {
+            if (pa_mainloop == new IntPtr (0)) {
+                throw new Exception ("Foo");
+            }
             return pa_glib_mainloop_get_api (pa_mainloop);
         }
 
         public void Dispose ()
         {
             pa_glib_mainloop_free (pa_mainloop);
+            pa_mainloop = new IntPtr (0);
         }
         
         [DllImport ("pulse-mainloop-glib")]
