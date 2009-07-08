@@ -23,10 +23,47 @@ using GLib;
 
 namespace Pulseaudio
 {
+    public interface MainLoop
+    {
+        //TODO: Make this into an actual managed implementation of a Pulseaudio main loop
+        //For the moment, just require that we can get a pa_mainloop_api pointer out.
+        IntPtr GetAPI ();
+    }
+
+    public class GLibMainLoop : MainLoop, IDisposable
+    {
+        IntPtr pa_mainloop;
+
+        public GLibMainLoop ()
+        {
+            pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
+        }
+        
+        public IntPtr GetAPI ()
+        {
+            return pa_glib_mainloop_get_api (pa_mainloop);
+        }
+
+        public void Dispose ()
+        {
+            pa_glib_mainloop_free (pa_mainloop);
+        }
+        
+        [DllImport ("pulse-mainloop-glib")]
+        private static extern IntPtr pa_glib_mainloop_new (IntPtr main_context);
+        [DllImport ("pulse-mainloop-glib")]
+        private static extern IntPtr pa_glib_mainloop_get_api (IntPtr pa_mainloop);
+        [DllImport ("pulse-mainloop-glib")]
+        private static extern void pa_glib_mainloop_free (IntPtr pa_mainloop);        
+
+        [DllImport ("glib-2.0")]
+        private static extern IntPtr g_main_context_default ();
+    }
+    
     public class Context
     {
         IntPtr context;
-        IntPtr pa_mainloop;
+        GLibMainLoop loop;
 
         public delegate void ConnectionStateHandler ();
 
@@ -35,8 +72,8 @@ namespace Pulseaudio
 
         public Context ()
         {
-            pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
-            context = pa_context_new (pa_glib_mainloop_get_api (pa_mainloop), "LibFoo");
+            loop = new GLibMainLoop ();
+            context = pa_context_new (loop.GetAPI (), "LibFoo");
             pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
         }
 
@@ -100,9 +137,6 @@ namespace Pulseaudio
             Terminated      /**< The connection was terminated cleanly */
         }   
         
-        [DllImport ("glib-2.0")]
-        private static extern IntPtr g_main_context_default ();
-
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_new (IntPtr mainloop_api, string appName);
         [DllImport ("pulse")]
@@ -116,12 +150,5 @@ namespace Pulseaudio
                                                                   IntPtr userdata);
         [DllImport ("pulse")]
         private static extern ConnectionState pa_context_get_state (IntPtr context);
-        
-        [DllImport ("pulse-mainloop-glib")]
-        private static extern IntPtr pa_glib_mainloop_new (IntPtr main_context);
-        [DllImport ("pulse-mainloop-glib")]
-        private static extern IntPtr pa_glib_mainloop_get_api (IntPtr pa_mainloop);
-        [DllImport ("pulse-mainloop-glib")]
-        private static extern void pa_glib_mainloop_free (IntPtr pa_mainloop);
     }
 }
