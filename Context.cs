@@ -87,7 +87,7 @@ namespace Pulseaudio
             Unconnected,    /**< The context hasn't been connected yet */
             Connecting,     /**< A connection is being established */
             Authorising,    /**< The client is authorizing itself to the daemon */
-            SettingName,   /**< The client is passing its application name to the daemon */
+            SettingName,    /**< The client is passing its application name to the daemon */
             Ready,          /**< The connection is established, the context is ready to execute operations */
             Failed,         /**< The connection failed or was disconnected */
             Terminated      /**< The connection was terminated cleanly */
