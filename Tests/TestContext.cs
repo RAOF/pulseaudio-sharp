@@ -18,6 +18,7 @@
 // 
 
 using System;
+using System.Threading;
 using NUnit.Framework;
 using GLib;
 
@@ -78,6 +79,21 @@ namespace Pulseaudio
         {
             Context c = new Context ();
             Assert.AreEqual (Context.ConnectionState.Unconnected, c.State);
+        }
+
+        [Test()]
+        public void TestStatusIsReadyAfterConnect ()
+        {
+            EventWaitHandle connection_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
+            Context c = new Context ();
+            c.Ready += delegate {
+                connection_finished.Set ();
+            };
+            c.Connect ();
+            while (!connection_finished.WaitOne (0, true)) {
+                MainLoopIterate ();
+            }
+            Assert.AreEqual (Context.ConnectionState.Ready, c.State);
         }
     }
 }
