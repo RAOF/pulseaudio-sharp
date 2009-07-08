@@ -1,7 +1,7 @@
 //  
 //  Copyright © 2009 Christopher James Halse Rogers <raof@ubuntu.com>
 // 
-//  Server.cs is a part of Pulseaudio#
+//  Context.cs is a part of Pulseaudio#
 // 
 //  Pulseaudio# is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
@@ -23,12 +23,12 @@ using GLib;
 
 namespace Pulseaudio
 {
-    public class Server
+    public class Context
     {
         IntPtr context;
         IntPtr pa_mainloop;
         
-        public Server ()
+        public Context ()
         {
             pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
             context = pa_context_new (pa_glib_mainloop_get_api (pa_mainloop), "LibFoo");

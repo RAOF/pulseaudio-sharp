@@ -1,7 +1,7 @@
 //  
 //  Copyright © 2009 Christopher James Halse Rogers <raof@ubuntu.com>
 // 
-//  TestServer.cs is a part of Pulseaudio#
+//  TestContext.cs is a part of Pulseaudio#
 // 
 //  Pulseaudio# is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
@@ -24,7 +24,7 @@ using GLib;
 namespace Pulseaudio
 {
     [TestFixture()]
-    public class TestServer
+    public class TestContext
     {
         private void MainLoopIterate ()
         {
@@ -37,7 +37,7 @@ namespace Pulseaudio
         // server.  It'd be good to spawn a known-version server of our very own.
         public void TestGetServerVersion()
         {
-            Server s = new Server ();
+            Context s = new Context ();
             MainLoopIterate ();
             Assert.AreEqual ("pulseaudio 0.9.16-test2", s.Version);
         }
@@ -45,7 +45,7 @@ namespace Pulseaudio
         [Test()]
         public void TestGetServerAPIVersion ()
         {
-            Server s = new Server ();
+            Context s = new Context ();
             MainLoopIterate ();
             Assert.AreEqual (16, s.ServerAPI);
         }
