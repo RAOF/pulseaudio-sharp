@@ -24,6 +24,10 @@ using GLib;
 
 namespace Pulseaudio
 {
+    // TODO: These tests all run against the user's pulseaudio daemon, which we don't control.
+    // Thus, some of these tests are expected to break on systems which aren't mine!
+    // It would be good to set up an explicit test pulseaudio server which doesn't interact with the user.
+    // This shall be left as an exercise for the reader.
     [TestFixture()]
     public class TestContext
     {
@@ -34,8 +38,6 @@ namespace Pulseaudio
         }
         
         [Test()]
-        // TODO: running this test is going to break frequently, because it's relying on the system-wide pulseaudio
-        // server.  It'd be good to spawn a known-version server of our very own.
         public void TestGetServerVersion()
         {
             Context s = new Context ();
