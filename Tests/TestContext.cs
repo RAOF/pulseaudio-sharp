@@ -72,5 +72,12 @@ namespace Pulseaudio
             MainLoopIterate ();
             Assert.IsTrue (flag);            
         }
+
+        [Test()]
+        public void TestStatusIsDisconnectedBeforeConnect ()
+        {
+            Context c = new Context ();
+            Assert.AreEqual (Context.ConnectionState.Unconnected, c.State);
+        }
     }
 }

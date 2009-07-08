@@ -57,6 +57,13 @@ namespace Pulseaudio
             }
         }
 
+        public ConnectionState State {
+            get {
+                return pa_context_get_state (context);
+            }
+        }
+                
+
         [Flags]
         public enum ContextConnectionFlags
         {
