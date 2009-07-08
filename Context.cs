@@ -31,6 +31,7 @@ namespace Pulseaudio
         public delegate void ConnectionStateHandler ();
 
         public event ConnectionStateHandler Connected;
+        public event ConnectionStateHandler Connecting;
 
         public Context ()
         {
@@ -68,10 +69,29 @@ namespace Pulseaudio
 
         private void ContextNotifyHandler (IntPtr context, IntPtr userdata)
         {
-            if (Connected != null) {
-                Connected ();
+            switch (pa_context_get_state (context)) {
+            case ConnectionState.Ready:
+                if (Connected != null) {
+                    Connected ();
+                }
+                break;
+            case ConnectionState.Connecting:
+                if (Connecting != null) {
+                    Connecting ();
+                }
+                break;
             }
         }
+
+        public enum ConnectionState {
+            Unconnected,    /**< The context hasn't been connected yet */
+            Connecting,     /**< A connection is being established */
+            Authorising,    /**< The client is authorizing itself to the daemon */
+            SettingName,   /**< The client is passing its application name to the daemon */
+            Ready,          /**< The connection is established, the context is ready to execute operations */
+            Failed,         /**< The connection failed or was disconnected */
+            Terminated      /**< The connection was terminated cleanly */
+        }   
         
         [DllImport ("glib-2.0")]
         private static extern IntPtr g_main_context_default ();
@@ -87,6 +107,8 @@ namespace Pulseaudio
         private static extern void pa_context_set_state_callback (IntPtr context, 
                                                                   ContextNotifyCB cb, 
                                                                   IntPtr userdata);
+        [DllImport ("pulse")]
+        private static extern ConnectionState pa_context_get_state (IntPtr context);
         
         [DllImport ("pulse-mainloop-glib")]
         private static extern IntPtr pa_glib_mainloop_new (IntPtr main_context);

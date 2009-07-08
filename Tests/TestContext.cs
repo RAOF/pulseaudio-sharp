@@ -61,5 +61,16 @@ namespace Pulseaudio
             MainLoopIterate ();
             Assert.IsTrue (flag);
         }
+
+        [Test()]
+        public void TestConnectingEventTriggers ()
+        {
+            bool flag = false;
+            Context c = new Context ();
+            c.Connecting += delegate { flag = true; };
+            c.Connect ();
+            MainLoopIterate ();
+            Assert.IsTrue (flag);            
+        }
     }
 }
