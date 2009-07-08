@@ -50,5 +50,16 @@ namespace Pulseaudio
             MainLoopIterate ();
             Assert.AreEqual (16, s.ServerAPI);
         }
+
+        [Test()]
+        public void TestConnectedEventTriggers ()
+        {
+            bool flag = false;
+            Context c = new Context ();
+            c.Connected += delegate { flag = true; };
+            c.Connect ();
+            MainLoopIterate ();
+            Assert.IsTrue (flag);
+        }
     }
 }

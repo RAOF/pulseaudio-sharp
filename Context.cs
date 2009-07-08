@@ -27,18 +27,23 @@ namespace Pulseaudio
     {
         IntPtr context;
         IntPtr pa_mainloop;
-        
+
+        public delegate void ConnectionStateHandler ();
+
+        public event ConnectionStateHandler Connected;
+
         public Context ()
         {
             pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
             context = pa_context_new (pa_glib_mainloop_get_api (pa_mainloop), "LibFoo");
+            pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
         }
 
         public void Connect ()
         {
             pa_context_connect (context, null, ContextConnectionFlags.None, new IntPtr (0));
         }
-
+        
         public UInt32 ServerAPI {
             get {
                 return pa_context_get_server_protocol_version (context);
@@ -58,7 +63,15 @@ namespace Pulseaudio
             NoAutoSpawn = 1,
             NoFail= 2
         }
-        
+
+        private delegate void ContextNotifyCB (IntPtr context, IntPtr userdata);
+
+        private void ContextNotifyHandler (IntPtr context, IntPtr userdata)
+        {
+            if (Connected != null) {
+                Connected ();
+            }
+        }
         
         [DllImport ("glib-2.0")]
         private static extern IntPtr g_main_context_default ();
@@ -70,6 +83,11 @@ namespace Pulseaudio
                                                       IntPtr spawnApi);
         [DllImport ("pulse")]
         private static extern UInt32 pa_context_get_server_protocol_version (IntPtr context);
+        [DllImport ("pulse")]
+        private static extern void pa_context_set_state_callback (IntPtr context, 
+                                                                  ContextNotifyCB cb, 
+                                                                  IntPtr userdata);
+        
         [DllImport ("pulse-mainloop-glib")]
         private static extern IntPtr pa_glib_mainloop_new (IntPtr main_context);
         [DllImport ("pulse-mainloop-glib")]
