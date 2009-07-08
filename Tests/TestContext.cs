@@ -56,7 +56,7 @@ namespace Pulseaudio
         {
             bool flag = false;
             Context c = new Context ();
-            c.Connected += delegate { flag = true; };
+            c.Ready += delegate { flag = true; };
             c.Connect ();
             MainLoopIterate ();
             Assert.IsTrue (flag);

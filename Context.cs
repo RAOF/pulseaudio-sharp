@@ -30,7 +30,7 @@ namespace Pulseaudio
 
         public delegate void ConnectionStateHandler ();
 
-        public event ConnectionStateHandler Connected;
+        public event ConnectionStateHandler Ready;
         public event ConnectionStateHandler Connecting;
 
         public Context ()
@@ -71,8 +71,8 @@ namespace Pulseaudio
         {
             switch (pa_context_get_state (context)) {
             case ConnectionState.Ready:
-                if (Connected != null) {
-                    Connected ();
+                if (Ready != null) {
+                    Ready ();
                 }
                 break;
             case ConnectionState.Connecting:
