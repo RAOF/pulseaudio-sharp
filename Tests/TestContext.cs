@@ -46,10 +46,16 @@ namespace Pulseaudio
         [Test()]
         public void TestGetServerAPIVersion ()
         {
+            EventWaitHandle connection_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context s = new Context ();
+            s.Ready += delegate {
+                Assert.AreEqual (16, s.ServerAPI);
+                connection_finished.Set ();
+            };
             s.Connect ();
-            MainLoopIterate ();
-            Assert.AreEqual (16, s.ServerAPI);
+            while (!connection_finished.WaitOne (0, true)) {
+                MainLoopIterate ();
+            }
         }
 
         [Test()]
@@ -59,7 +65,9 @@ namespace Pulseaudio
             Context c = new Context ();
             c.Ready += delegate { flag = true; };
             c.Connect ();
-            MainLoopIterate ();
+            while (!flag) {
+                MainLoopIterate ();
+            }
             Assert.IsTrue (flag);
         }
 
