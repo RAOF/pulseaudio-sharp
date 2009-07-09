@@ -27,16 +27,16 @@ namespace Pulseaudio
         public const int MaxChannels = 32;
     }
     
+    internal struct CVolume
+    {
+        public Byte channels;
+        [MarshalAs (UnmanagedType.ByValArray, SizeConst=Constants.MaxChannels)]
+        public UInt32 [] values;
+    }
+
     public class Volume
     {
-        private struct CVolume
-        {
-            public Byte channels;
-            [MarshalAs (UnmanagedType.ByValArray, SizeConst=Constants.MaxChannels)]
-            public UInt32 [] values;
-        }
-
-        private CVolume vol;
+        internal CVolume vol;
         private const UInt32 norm = 0x10000U;
         private const UInt32 mute = 0;
         
@@ -46,9 +46,18 @@ namespace Pulseaudio
             vol.channels = 2;
         }
 
+        /// <summary>
+        /// Reset the volume to no change (100%)
+        /// </summary>
         public void Reset ()
         {
             vol = pa_cvolume_set (vol, vol.channels, norm);
+        }
+
+        public void Set (double val)
+        {
+            vol = pa_cvolume_set (vol, vol.channels,  (UInt32)(val * norm));
+            System.Console.WriteLine ("Setting vol to {0}", (UInt32)(val * norm));
         }
 
         public override bool Equals (object obj)

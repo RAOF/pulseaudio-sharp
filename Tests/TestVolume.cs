@@ -44,5 +44,25 @@ namespace Pulseaudio
             r.Reset ();
             Assert.IsTrue (v.Equals (r));
         }
+
+        [Test()]
+        public void SetSameVolume ()
+        {
+            Volume a = new Volume ();
+            Volume b = new Volume ();
+            a.Set (0.5);
+            b.Set (0.5);
+            Assert.IsTrue (a == b);
+        }
+
+        [Test()]
+        public void SetDifferentVolume ()
+        {
+            Volume a = new Volume ();
+            Volume b = new Volume ();
+            a.Set (0.5);
+            b.Set (0);
+            Assert.IsTrue (a != b);
+        }
     }
 }
