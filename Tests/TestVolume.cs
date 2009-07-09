@@ -29,8 +29,20 @@ namespace Pulseaudio
         public void TestResetSetsToNorm()
         {
             Volume v = new Volume ();
+            Volume r = new Volume ();
             v.Reset ();
-            Assert.AreEqual (Volume.Norm, v);
+            r.Reset ();
+            Assert.IsTrue (r == v);
+        }
+
+        [Test()]
+        public void TestVolumeEquals()
+        {
+            Volume v = new Volume ();
+            Volume r = new Volume ();
+            v.Reset ();
+            r.Reset ();
+            Assert.IsTrue (v.Equals (r));
         }
     }
 }

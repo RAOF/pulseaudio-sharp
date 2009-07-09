@@ -22,25 +22,41 @@ using System.Runtime.InteropServices;
 
 namespace Pulseaudio
 {
+    public class Constants
+    {
+        public const int MaxChannels = 32;
+    }
+    
     public class Volume
     {
-        public static readonly Volume Norm = new Volume ();
+        private struct CVolume
+        {
+            public Byte channels;
+            [MarshalAs (UnmanagedType.ByValArray, SizeConst=Constants.MaxChannels)]
+            public UInt32 [] values;
+        }
+
+        private CVolume vol;
+        private const UInt32 norm = 0x10000U;
+        private const UInt32 mute = 0;
         
         public Volume()
         {
+            vol = pa_cvolume_init (vol);
+            vol.channels = 2;
         }
 
         public void Reset ()
         {
+            vol = pa_cvolume_set (vol, vol.channels, norm);
         }
 
         public override bool Equals (object obj)
         {
-            Volume v = obj as Volume;
-            if (v != null) {
-                return true;
+            if (obj is Volume) {
+                return (this as Volume) == (obj as Volume);
             }
-            return base.Equals (obj);
+            return false;
         }
 
         public override int GetHashCode ()
@@ -48,16 +64,20 @@ namespace Pulseaudio
             return base.GetHashCode ();
         }
 
-/*
         public static bool operator== (Volume a, Volume b)
         {
-            return true;
+            return pa_cvolume_equal (a.vol, b.vol) != 0;
         }
-/*
         public static bool operator!= (Volume a, Volume b)
         {
             return !(a==b);
         }
-*/
+
+        [DllImport ("pulse")]
+        private static extern int pa_cvolume_equal (CVolume a, CVolume b);
+        [DllImport ("pulse")]
+        private static extern CVolume pa_cvolume_init (CVolume a);
+        [DllImport ("pulse")]
+        private static extern CVolume pa_cvolume_set (CVolume vol, uint channels, UInt32 val);
     }
 }
