@@ -43,6 +43,11 @@ namespace Pulseaudio
             return base.Equals (obj);
         }
 
+        public override int GetHashCode ()
+        {
+            return base.GetHashCode ();
+        }
+
 /*
         public static bool operator== (Volume a, Volume b)
         {
