@@ -106,20 +106,5 @@ namespace Pulseaudio
             Assert.AreEqual (Context.ConnectionState.Ready, c.State);
         }
 
-        [Test()]
-        public void TestGLibMainLoopAPIIsStable ()
-        {
-            GLibMainLoop loop = new GLibMainLoop ();
-            Assert.AreEqual (loop.GetAPI (), loop.GetAPI ());
-        }
-
-        [Test()]
-        [ExpectedException()]
-        public void TestGLibMainLoopCatchesNullMainLoop ()
-        {
-            GLibMainLoop loop = new GLibMainLoop ();
-            loop.Dispose ();
-            loop.GetAPI ();
-        }
     }
 }

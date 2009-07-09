@@ -21,48 +21,7 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace Pulseaudio
-{
-    public interface MainLoop
-    {
-        //TODO: Make this into an actual managed implementation of a Pulseaudio main loop
-        //For the moment, just require that we can get a pa_mainloop_api pointer out.
-        IntPtr GetAPI ();
-    }
-
-    public class GLibMainLoop : MainLoop, IDisposable
-    {
-        IntPtr pa_mainloop = new IntPtr (0);
-
-        public GLibMainLoop ()
-        {
-            pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
-        }
-        
-        public IntPtr GetAPI ()
-        {
-            if (pa_mainloop == new IntPtr (0)) {
-                throw new Exception ("Foo");
-            }
-            return pa_glib_mainloop_get_api (pa_mainloop);
-        }
-
-        public void Dispose ()
-        {
-            pa_glib_mainloop_free (pa_mainloop);
-            pa_mainloop = new IntPtr (0);
-        }
-        
-        [DllImport ("pulse-mainloop-glib")]
-        private static extern IntPtr pa_glib_mainloop_new (IntPtr main_context);
-        [DllImport ("pulse-mainloop-glib")]
-        private static extern IntPtr pa_glib_mainloop_get_api (IntPtr pa_mainloop);
-        [DllImport ("pulse-mainloop-glib")]
-        private static extern void pa_glib_mainloop_free (IntPtr pa_mainloop);        
-
-        [DllImport ("glib-2.0")]
-        private static extern IntPtr g_main_context_default ();
-    }
-    
+{    
     public class Context
     {
         IntPtr context;
