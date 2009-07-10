@@ -39,6 +39,5 @@ namespace Pulseaudio
             loop.Dispose ();
             loop.GetAPI ();
         }
-
     }
 }
