@@ -26,38 +26,43 @@ namespace Pulseaudio
     {
         public const int MaxChannels = 32;
     }
-    
-    internal struct CVolume
-    {
-        public Byte channels;
-        [MarshalAs (UnmanagedType.ByValArray, SizeConst=Constants.MaxChannels)]
-        public UInt32 [] values;
-    }
 
+    [StructLayout (LayoutKind.Sequential)]
     public class Volume
     {
-        internal CVolume vol;
+        private Byte channels;
+        [MarshalAs (UnmanagedType.ByValArray, SizeConst=Constants.MaxChannels)]
+        private UInt32 [] values;
+
         private const UInt32 norm = 0x10000U;
         private const UInt32 mute = 0;
         
         public Volume()
         {
-            vol = pa_cvolume_init (vol);
-            vol.channels = 2;
+            values = new uint[Constants.MaxChannels];
+            pa_cvolume_init (this);
+            channels = 2;
         }
 
         /// <summary>
-        /// Reset the volume to no change (100%)
+        /// Reset the volume of all channels to no change (100%)
         /// </summary>
         public void Reset ()
         {
-            vol = pa_cvolume_set (vol, vol.channels, norm);
+            pa_cvolume_set (this, channels, norm);
         }
 
+        /// <summary>
+        /// Set the volume of all channels.
+        /// </summary>
+        /// <param name="val">
+        /// A <see cref="System.Double"/>.  The nominal range is 0 - 1.0, with 0 corresponding to mute
+        /// and 1.0 corresponding to full volume (or, equivalently, no volume adjustment).
+        /// It is possible to set values > 1.0.  This is not an error, but is not generally a good idea.
+        /// </param>
         public void Set (double val)
         {
-            vol = pa_cvolume_set (vol, vol.channels,  (UInt32)(val * norm));
-            System.Console.WriteLine ("Setting vol to {0}", (UInt32)(val * norm));
+            pa_cvolume_set (this, channels,  (UInt32)(val * norm));
         }
 
         public override bool Equals (object obj)
@@ -75,7 +80,7 @@ namespace Pulseaudio
 
         public static bool operator== (Volume a, Volume b)
         {
-            return pa_cvolume_equal (a.vol, b.vol) != 0;
+            return pa_cvolume_equal (a, b) != 0;
         }
         public static bool operator!= (Volume a, Volume b)
         {
@@ -83,10 +88,10 @@ namespace Pulseaudio
         }
 
         [DllImport ("pulse")]
-        private static extern int pa_cvolume_equal (CVolume a, CVolume b);
+        private static extern int pa_cvolume_equal (Volume a, Volume b);
         [DllImport ("pulse")]
-        private static extern CVolume pa_cvolume_init (CVolume a);
+        private static extern void pa_cvolume_init ([Out] Volume a);
         [DllImport ("pulse")]
-        private static extern CVolume pa_cvolume_set (CVolume vol, uint channels, UInt32 val);
+        private static extern void pa_cvolume_set ([In, Out] Volume vol, uint channels, UInt32 val);
     }
 }
