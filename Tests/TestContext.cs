@@ -105,5 +105,10 @@ namespace Pulseaudio
             }
             Assert.AreEqual (Context.ConnectionState.Ready, c.State);
         }
+
+        [Test()]
+        public void SinkInputCallbackIsCalled ()
+        {
+        }
     }
 }
