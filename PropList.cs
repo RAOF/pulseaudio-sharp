@@ -32,12 +32,12 @@ namespace Pulseaudio
                 throw new NullReferenceException ();
             }
             handle = new HandleRef (this, listPtr);
-            Clear ();
         }
 
         public bool Empty {
             get {
-                return (pa_proplist_isempty (handle) == 0);
+                // TODO: Work out why pa_proplist_isempty doesn't return 0 when the list is empty.
+                return (Count == 0);
             }
         }
 
