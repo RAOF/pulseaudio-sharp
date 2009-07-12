@@ -19,6 +19,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Pulseaudio
 {    
@@ -97,7 +98,12 @@ namespace Pulseaudio
             Ready,          /**< The connection is established, the context is ready to execute operations */
             Failed,         /**< The connection failed or was disconnected */
             Terminated      /**< The connection was terminated cleanly */
-        }   
+        }
+
+        public IEnumerable<SinkInputInfo> EnumerateSinkInputs ()
+        {
+            yield return new SinkInputInfo ();
+        }
         
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_new (IntPtr mainloop_api, string appName);

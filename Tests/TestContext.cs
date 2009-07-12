@@ -36,6 +36,19 @@ namespace Pulseaudio
             while (GLib.MainContext.Iteration (false))
             { }
         }
+
+        private void ActWithMainLoop (Action action)
+        {
+            EventWaitHandle action_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
+            GLib.Timeout.Add (0, delegate {
+                action ();
+                action_finished.Set ();
+                return false;
+            });
+            while (!action_finished.WaitOne (0, true)) {
+                MainLoopIterate ();
+            }
+        }
         
         [Test()]
         public void TestGetServerVersion()
@@ -109,6 +122,10 @@ namespace Pulseaudio
         [Test()]
         public void SinkInputCallbackIsCalled ()
         {
+            Context c = new Context ();
+            ActWithMainLoop (delegate {
+                CollectionAssert.IsNotEmpty (c.EnumerateSinkInputs ());
+            });
         }
     }
 }
