@@ -32,9 +32,9 @@ namespace Pulseaudio
         }
         
         private HandleRef handle;
-        internal Operation(HandleRef handle)
+        internal Operation(IntPtr handle)
         {
-            this.handle = handle;
+            this.handle = new HandleRef (this, handle);
         }
 
         ~Operation ()
