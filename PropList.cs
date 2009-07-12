@@ -34,6 +34,14 @@ namespace Pulseaudio
             handle = new HandleRef (this, listPtr);
         }
 
+        internal PropList (IntPtr listPtr)
+        {
+            if (listPtr == IntPtr.Zero) {
+                throw new NullReferenceException ();
+            }
+            handle = new HandleRef (this, listPtr);
+        }
+
         public bool Empty {
             get {
                 // TODO: Work out why pa_proplist_isempty doesn't return 0 when the list is empty.
