@@ -122,10 +122,19 @@ namespace Pulseaudio
         [Test()]
         public void SinkInputCallbackIsCalled ()
         {
+            var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context c = new Context ();
+            c.Ready += delegate {
+                c.EnumerateSinkInputs ((cb, eol) => {
+                    callback_called.Set ();
+                });
+            };
             ActWithMainLoop (delegate {
-                CollectionAssert.IsNotEmpty (c.EnumerateSinkInputs ());
+                c.Connect ();
             });
+            while (!callback_called.WaitOne (0, true)) {
+                MainLoopIterate ();
+            }
         }
     }
 }

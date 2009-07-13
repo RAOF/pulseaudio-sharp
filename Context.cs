@@ -20,6 +20,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Pulseaudio
 {    
@@ -100,10 +101,17 @@ namespace Pulseaudio
             Terminated      /**< The connection was terminated cleanly */
         }
 
-        public IEnumerable<SinkInputInfo> EnumerateSinkInputs ()
+        public void EnumerateSinkInputs (SinkInputInfoCallback cb)
         {
-            yield return new SinkInputInfo ();
+            var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, SinkInputInfo info, int eol, IntPtr userdata) =>
+                                                        {
+                cb (info, eol);
+            });
+            pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero);
         }
+
+        public delegate void SinkInputInfoCallback (SinkInputInfo info, int eol);
+        private delegate void pa_sink_input_info_cb (IntPtr context, SinkInputInfo info, int eol, IntPtr userdata);
         
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_new (IntPtr mainloop_api, string appName);
@@ -118,5 +126,10 @@ namespace Pulseaudio
                                                                   IntPtr userdata);
         [DllImport ("pulse")]
         private static extern ConnectionState pa_context_get_state (IntPtr context);
+
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_get_sink_input_info_list (IntPtr context, 
+                                                                          pa_sink_input_info_cb cb,
+                                                                          IntPtr userdata);
     }
 }
