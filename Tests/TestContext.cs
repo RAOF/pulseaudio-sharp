@@ -64,7 +64,7 @@ namespace Pulseaudio
             EventWaitHandle connection_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context s = new Context ();
             s.Ready += delegate {
-                Assert.AreEqual (16, s.ServerAPI);
+                Assert.AreEqual (15, s.ServerAPI);
                 connection_finished.Set ();
             };
             s.Connect ();
