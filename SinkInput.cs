@@ -1,7 +1,7 @@
 //  
 //  Copyright © 2009 Christopher James Halse Rogers <raof@ubuntu.com>
 // 
-//  SinkInputInfo.cs is a part of Pulseaudio#
+//  SinkInput.cs is a part of Pulseaudio#
 // 
 //  Pulseaudio# is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
