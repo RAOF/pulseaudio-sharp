@@ -136,5 +136,21 @@ namespace Pulseaudio
                 MainLoopIterate ();
             }
         }
+
+        [Test()]
+        public void SinkCallbackIsCalled ()
+        {
+            var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
+            Context c = new Context ();
+            c.Ready += delegate {
+                c.EnumerateSinks ((cb, eol) => {
+                    callback_called.Set ();
+                });
+            };
+            ActWithMainLoop (c.Connect);
+            while (!callback_called.WaitOne (0, true)) {
+                MainLoopIterate ();
+            }
+        }
     }
 }

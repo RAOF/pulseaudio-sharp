@@ -18,6 +18,7 @@
 // 
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace Pulseaudio
 {
@@ -65,28 +66,53 @@ namespace Pulseaudio
         /**< The latency can be adjusted dynamically depending on the
          * needs of the connected streams. \since 0.9.15 */
     }
-    
+
+    [StructLayout (LayoutKind.Sequential)]
     public class SinkInfo
     {
-        string name;                  /**< Name of the sink */
+        IntPtr name;                  /**< Name of the sink */
         UInt32 index;                 /**< Index of the sink */
-        string description;           /**< Description of this sink */
+        IntPtr description;           /**< Description of this sink */
         SampleSpec sample_spec;       /**< Sample spec of this sink */
         ChannelMap channel_map;       /**< Channel map */
         UInt32 owner_module;          /**< Index of the owning module of this sink, or PA_INVALID_INDEX */
         Volume volume;                /**< Volume of the sink */
         int mute;                     /**< Mute switch of the sink */
         UInt32 monitor_source;        /**< Index of the monitor source connected to this sink */
-        string monitor_source_name;   /**< The name of the monitor source */
+        IntPtr monitor_source_name;   /**< The name of the monitor source */
         UInt64 latency;               /**< Length of queued audio in the output buffer. */
-        string driver;                /**< Driver name. */
+        IntPtr driver;                /**< Driver name. */
         SinkFlags flags;              /**< Flags */
-        PropList proplist;            /**< Property list \since 0.9.11 */
+        IntPtr proplist;              /**< Property list \since 0.9.11 */
         UInt64 configured_latency;    /**< The latency this device has been configured to. \since 0.9.11 */
         UInt32 base_volume;           /**< Some kind of "base" volume that refers to unamplified/unattenuated volume in the context of the output device. \since 0.9.15 */
         SinkState state;              /**< State \since 0.9.15 */
         UInt32 n_volume_steps;        /**< Number of volume steps for sinks which do not support arbitrary volumes. \since 0.9.15 */
         UInt32 card;                  /**< Card index, or PA_INVALID_INDEX. \since 0.9.15 */
+        
+        public string Name {
+            get {
+                return Marshal.PtrToStringAnsi (name);
+            }
+        }
+
+        public string Description {
+            get {
+                return Marshal.PtrToStringAnsi (description);
+            }
+        }
+
+        public string MonitorSourceName {
+            get {
+                return Marshal.PtrToStringAnsi (monitor_source_name);
+            }
+        }
+        
+        public string Driver {
+            get {
+                return Marshal.PtrToStringAnsi (driver);
+            }
+        }
         
         public SinkInfo()
         {
