@@ -171,5 +171,24 @@ namespace Pulseaudio
             };
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
+
+        [Test()]
+        public void SinkInfoContainsNonEmptyDescription ()
+        {
+            var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
+            Context c = new Context ();
+            c.Ready += delegate {
+                c.EnumerateSinks ((SinkInfo info, int eol) => {
+                    if (eol == 0) {
+                        Assert.IsNotNull (info, "Sink info is null");
+                        Assert.IsNotNull (info.Description, "info.Name is null");
+                        Assert.IsNotEmpty (info.Description, "info.Name is empty");
+                    } else {
+                        callback_called.Set ();
+                    }
+                });
+            };
+            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+        }
     }
 }
