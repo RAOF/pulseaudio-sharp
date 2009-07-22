@@ -49,6 +49,19 @@ namespace Pulseaudio
                 MainLoopIterate ();
             }
         }
+
+        private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
+        {
+            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
+            GLib.Timeout.Add (1000, () => {timeout.Set (); return false;});
+            action ();
+            while (!until.WaitOne (0, true)) {
+                MainLoopIterate ();
+                if (timeout.WaitOne (0, true)) {
+                    Assert.Fail (timeoutMessage);
+                }
+            }
+        }
         
         [Test()]
         public void TestGetServerVersion()
@@ -64,13 +77,10 @@ namespace Pulseaudio
             EventWaitHandle connection_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context s = new Context ();
             s.Ready += delegate {
-                Assert.AreEqual (15, s.ServerAPI);
                 connection_finished.Set ();
             };
-            s.Connect ();
-            while (!connection_finished.WaitOne (0, true)) {
-                MainLoopIterate ();
-            }
+            RunUntilEventSignal (s.Connect, connection_finished, "Timeout waiting for Connect");
+            Assert.AreEqual (15, s.ServerAPI);            
         }
 
         [Test()]
@@ -112,10 +122,7 @@ namespace Pulseaudio
             c.Ready += delegate {
                 connection_finished.Set ();
             };
-            c.Connect ();
-            while (!connection_finished.WaitOne (0, true)) {
-                MainLoopIterate ();
-            }
+            RunUntilEventSignal (c.Connect, connection_finished, "Timeout waiting for Connect to finish");
             Assert.AreEqual (Context.ConnectionState.Ready, c.State);
         }
 
@@ -129,28 +136,21 @@ namespace Pulseaudio
                     callback_called.Set ();
                 });
             };
-            ActWithMainLoop (delegate {
-                c.Connect ();
-            });
-            while (!callback_called.WaitOne (0, true)) {
-                MainLoopIterate ();
-            }
+            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinkInputs");
         }
 
         [Test()]
         public void SinkCallbackIsCalled ()
         {
             var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
+
             Context c = new Context ();
             c.Ready += delegate {
                 c.EnumerateSinks ((cb, eol) => {
                     callback_called.Set ();
                 });
             };
-            ActWithMainLoop (c.Connect);
-            while (!callback_called.WaitOne (0, true)) {
-                MainLoopIterate ();
-            }
+            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
     }
 }
