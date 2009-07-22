@@ -80,7 +80,7 @@ namespace Pulseaudio
                 connection_finished.Set ();
             };
             RunUntilEventSignal (s.Connect, connection_finished, "Timeout waiting for Connect");
-            Assert.AreEqual (15, s.ServerAPI);            
+            Assert.AreEqual (16, s.ServerAPI);            
         }
 
         [Test()]
