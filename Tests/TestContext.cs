@@ -72,6 +72,10 @@ namespace Pulseaudio
             Assert.AreEqual ("pulseaudio 0.9.16-test2", s.Version);
         }
 
+        /*
+         * This test asserts the running pulseaudio server's API version.
+         * This will fail if the running server isn't 0.9.16.
+         */
         [Test()]
         public void TestGetServerAPIVersion ()
         {
@@ -192,6 +196,10 @@ namespace Pulseaudio
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
+        /*
+         * This test assumes that the running pulseaudio daemon exports an RTP sender sink.
+         * It will fail otherwise
+         */
         [Test()]
         public void SinkInfoContainsSinkNamedRTP ()
         {
