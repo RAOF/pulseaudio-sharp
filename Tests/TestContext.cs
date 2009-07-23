@@ -218,5 +218,29 @@ namespace Pulseaudio
             };
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
+
+        /*
+         * This test assumes that the running pulseaudio daemon has a sink with the description
+         * "Internal Audio Analog Stereo".
+         * It will fail otherwise
+         */
+        [Test()]
+        public void SinkInfoContainsInternalAudioSink ()
+        {
+            var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
+            Context c = new Context ();
+            List<string> sink_descriptions = new List<string> ();
+            c.Ready += delegate {
+                c.EnumerateSinks ((SinkInfo info, int eol) => {
+                    if (eol == 0) {
+                        sink_descriptions.Add (info.Description);
+                    } else {
+                        Assert.Contains ("Internal Audio Analog Stereo", sink_descriptions);
+                        callback_called.Set ();
+                    }
+                });
+            };
+            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+        }
     }
 }
