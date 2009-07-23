@@ -19,6 +19,7 @@
 
 using System;
 using System.Threading;
+using System.Collections.Generic;
 using NUnit.Framework;
 using GLib;
 
@@ -184,6 +185,25 @@ namespace Pulseaudio
                         Assert.IsNotNull (info.Description, "info.Name is null");
                         Assert.IsNotEmpty (info.Description, "info.Name is empty");
                     } else {
+                        callback_called.Set ();
+                    }
+                });
+            };
+            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+        }
+
+        [Test()]
+        public void SinkInfoContainsSinkNamedRTP ()
+        {
+            var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
+            Context c = new Context ();
+            List<string> sink_names = new List<string> ();
+            c.Ready += delegate {
+                c.EnumerateSinks ((SinkInfo info, int eol) => {
+                    if (eol == 0) {
+                        sink_names.Add (info.Name);
+                    } else {
+                        Assert.Contains ("rtp", sink_names);
                         callback_called.Set ();
                     }
                 });
