@@ -21,7 +21,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 using NUnit.Framework;
-using GLib;
+using g = GLib;
 
 namespace Pulseaudio
 {
@@ -34,14 +34,14 @@ namespace Pulseaudio
     {
         private void MainLoopIterate ()
         {
-            while (GLib.MainContext.Iteration (false))
+            while (g::MainContext.Iteration (false))
             { }
         }
 
         private void ActWithMainLoop (Action action)
         {
             EventWaitHandle action_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
-            GLib.Timeout.Add (0, delegate {
+            g::Timeout.Add (0, delegate {
                 action ();
                 action_finished.Set ();
                 return false;
@@ -54,7 +54,7 @@ namespace Pulseaudio
         private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
         {
             var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
-            GLib.Timeout.Add (1000, () => {timeout.Set (); return false;});
+            g::Timeout.Add (1000, () => {timeout.Set (); return false;});
             action ();
             while (!until.WaitOne (0, true)) {
                 MainLoopIterate ();
