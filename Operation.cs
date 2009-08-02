@@ -34,19 +34,25 @@ namespace Pulseaudio
         private HandleRef handle;
         internal Operation(IntPtr handle)
         {
+            if (handle == IntPtr.Zero) {
+                throw new ArgumentNullException ("handle", "Tried to create an Operation with null pa_operation pointer");
+            }
             this.handle = new HandleRef (this, handle);
         }
 
         ~Operation ()
         {
-            pa_operation_unref (handle);
+            if (handle.Handle != IntPtr.Zero) {
+                pa_operation_unref (handle);
+            }
         }
 
         public void Dispose ()
         {
             pa_operation_unref (handle);
-
             GC.SuppressFinalize (this);
+            
+            handle = new HandleRef (this, IntPtr.Zero);
         }
 
         public Status State {
