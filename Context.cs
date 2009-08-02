@@ -123,6 +123,25 @@ namespace Pulseaudio
 
         public delegate void SinkInfoCallback (SinkInfo info, int eol);
         private delegate void pa_sink_info_cb (IntPtr context, SinkInfo info, int eol, IntPtr userdata);
+
+        public void SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
+        {
+            var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => {
+                cb (success);
+            });
+            using (Operation o = new Operation (pa_context_set_sink_volume_by_index (context,
+                                                                                     index,
+                                                                                     vol,
+                                                                                     wrapped_cb,
+                                                                                     IntPtr.Zero))) {
+            }                                                                                     
+        }
+        
+        [DllImport("pulse")]
+         private static extern IntPtr pa_context_set_sink_volume_by_index(IntPtr context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+        
+        public delegate void OperationSuccessCallback (int success);
+        private delegate void pa_context_success_cb (IntPtr context, int success, IntPtr userdata);
         
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_new (IntPtr mainloop_api, string appName);

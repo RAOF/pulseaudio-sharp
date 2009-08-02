@@ -242,5 +242,17 @@ namespace Pulseaudio
             };
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
+
+        [Test()]
+        public void VolumeChangeCallbackRuns ()
+        {
+            var volume_set = new EventWaitHandle (false, EventResetMode.AutoReset);
+            Context c = new Context ();
+            Volume vol = new Volume ();
+            c.Ready += delegate {
+                c.SetSinkVolume (1, vol, (int success) => { volume_set.Set (); });
+            };
+            RunUntilEventSignal (c.Connect, volume_set, "Timeout waiting for SetSinkVolume");
+        }
     }
 }
