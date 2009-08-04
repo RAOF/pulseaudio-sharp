@@ -46,5 +46,13 @@ namespace Pulseaudio
             opn.Wait ();
             Assert.IsTrue (opn.State == Operation.Status.Done);
         }
+
+        [Test()]
+        public void ConnectAndWaitBlocksUntilContextIsReady ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            Assert.AreEqual (Context.ConnectionState.Ready, c.State);
+        }
     }
 }

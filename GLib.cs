@@ -18,6 +18,7 @@
 // 
 
 using System;
+using System.Threading;
 using Pulseaudio;
 using GLib;
 
@@ -28,6 +29,18 @@ namespace Pulseaudio.GLib
         public static void Wait (this Operation opn)
         {
             while (opn.State == Operation.Status.Running) {
+                MainContext.Iteration ();
+            }
+        }
+        
+        public static void ConnectAndWait (this Context context)
+        {
+            ManualResetEvent ready = new ManualResetEvent (false);
+            context.Ready += delegate {
+                ready.Set ();
+            };
+            context.Connect ();
+            while (!ready.WaitOne (0, true)) {
                 MainContext.Iteration ();
             }
         }
