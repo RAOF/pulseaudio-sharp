@@ -27,7 +27,7 @@ namespace Pulseaudio
     public class Context
     {
         IntPtr context;
-        GLibMainLoop loop;
+        MainLoop loop;
 
         public delegate void ConnectionStateHandler ();
 
