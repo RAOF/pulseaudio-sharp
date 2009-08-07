@@ -138,7 +138,7 @@ namespace Pulseaudio
         }
         
         [DllImport("pulse")]
-         private static extern IntPtr pa_context_set_sink_volume_by_index(IntPtr context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_set_sink_volume_by_index(IntPtr context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
         
         public delegate void OperationSuccessCallback (int success);
         private delegate void pa_context_success_cb (IntPtr context, int success, IntPtr userdata);
