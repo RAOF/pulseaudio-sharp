@@ -100,6 +100,22 @@ namespace Pulseaudio
             Terminated      /**< The connection was terminated cleanly */
         }
 
+
+        public ErrorCode LastError {
+            get {
+                return pa_context_errno (context);
+            }
+        }
+
+        public string LastErrorString {
+            get {
+                return Util.ErrorStringFromErrno (LastError);
+            }
+        }
+
+        [DllImport ("pulse")]
+        private static extern ErrorCode pa_context_errno (IntPtr context);
+        
         public void EnumerateSinkInputs (SinkInputInfoCallback cb)
         {
             var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, SinkInputInfo info, int eol, IntPtr userdata) =>

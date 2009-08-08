@@ -22,11 +22,41 @@ using System.Runtime.InteropServices;
 
 namespace Pulseaudio
 {
+    public enum ErrorCode {
+        OK = 0,                 /**< No error */
+        AccessFailure,          /**< Access failure */
+        UnknownCommand,         /**< Unknown command */
+        InvalidArgument,        /**< Invalid argument */
+        EntityExists,           /**< Entity exists */
+        NoSuchEntity,           /**< No such entity */
+        ConnectionRefused,      /**< Connection refused */
+        Protocol,               /**< Protocol error */
+        Timeout,                /**< Timeout */
+        NoAuthKey,              /**< No authorization key */
+        Internal,               /**< Internal error */
+        ConnectionTerminated,   /**< Connection terminated */
+        Killed,                 /**< Entity killed */
+        InvalidServer,          /**< Invalid server */
+        ModuleInitFailed,       /**< Module initialization failed */
+        BadState,               /**< Bad state */
+        NoData,                 /**< No data */
+        Version,                /**< Incompatible protocol version */
+        TooLarge,               /**< Data too large */
+        NotSupported,           /**< Operation not supported \since 0.9.5 */
+        Unknown,                /**< The error code was unknown to the client */
+        NoExtension,            /**< Extension does not exist. \since 0.9.12 */
+        Obsolete,               /**< Obsolete functionality. \since 0.9.15 */
+        NotImplemented,         /**< Missing implementation. \since 0.9.15 */
+        Forked,                 /**< The caller forked without calling execve() and tried to reuse the context. \since 0.9.15 */
+        IO,                     /**< An IO error happened. \since 0.9.16 */
+        PA_ERR_MAX              /**< Not really an error but the first invalid error code */
+    }
+
     public static class Util
     {
-        public static string ErrorStringFromErrno (int errno)
+        public static string ErrorStringFromErrno (ErrorCode error)
         {
-            return Marshal.PtrToStringAnsi (pa_strerror (errno));
+            return Marshal.PtrToStringAnsi (pa_strerror (Convert.ToInt32 (error)));
         }
             
         [DllImport ("pulse")]

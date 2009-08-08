@@ -22,6 +22,7 @@ using System.Threading;
 using System.Collections.Generic;
 using NUnit.Framework;
 using g = GLib;
+using Pulseaudio.GLib;
 
 namespace Pulseaudio
 {
@@ -253,6 +254,15 @@ namespace Pulseaudio
                 c.SetSinkVolume (1, vol, (int success) => { volume_set.Set (); });
             };
             RunUntilEventSignal (c.Connect, volume_set, "Timeout waiting for SetSinkVolume");
+        }
+
+        [Test()]
+        public void SuccessfulConnectionHasErrorOK ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            Assert.AreEqual (ErrorCode.OK, c.LastError);
+            Assert.AreEqual ("OK", c.LastErrorString);
         }
     }
 }
