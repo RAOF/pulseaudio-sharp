@@ -52,6 +52,37 @@ namespace Pulseaudio
         PA_ERR_MAX              /**< Not really an error but the first invalid error code */
     }
 
+    public class Error
+    {
+        private ErrorCode error;
+        private string error_string;
+        
+        internal Error (ErrorCode error)
+        {
+            this.error = error;
+        }
+
+        public ErrorCode Code {
+            get {
+                return error;
+            }
+        }
+
+        public string ErrorString {
+            get {
+                if (string.IsNullOrEmpty (error_string)) {
+                    error_string = Util.ErrorStringFromErrno (error);
+                }
+                return error_string;
+            }
+        }
+
+        public override string ToString ()
+        {
+            return string.Format("[Error: {0}]", Util.ErrorStringFromErrno (error));
+        }
+    }
+
     public static class Util
     {
         public static string ErrorStringFromErrno (ErrorCode error)

@@ -36,5 +36,12 @@ namespace Pulseaudio
         {
             Assert.AreEqual ("Invalid argument", Util.ErrorStringFromErrno (ErrorCode.InvalidArgument));
         }
+
+        [Test()]
+        public void TestErrorToStringFormatting ()
+        {
+            Error e = new Error (ErrorCode.OK);
+            Assert.AreEqual ("[Error: OK]", e.ToString ());
+        }
     }
 }
