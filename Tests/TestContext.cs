@@ -261,8 +261,8 @@ namespace Pulseaudio
         {
             Context c = new Context ();
             c.ConnectAndWait ();
-            Assert.AreEqual (ErrorCode.OK, c.LastError);
-            Assert.AreEqual ("OK", c.LastErrorString);
+            Assert.AreEqual (Error.Code.OK, c.LastError.ErrorCode);
+            Assert.AreEqual ("OK", c.LastError.Message);
         }
     }
 }

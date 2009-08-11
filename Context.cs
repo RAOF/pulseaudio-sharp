@@ -101,20 +101,14 @@ namespace Pulseaudio
         }
 
 
-        public ErrorCode LastError {
+        public Error LastError {
             get {
-                return pa_context_errno (context);
+                return new Error (pa_context_errno (context));
             }
         }
-
-        public string LastErrorString {
-            get {
-                return Util.ErrorStringFromErrno (LastError);
-            }
-        }
-
+        
         [DllImport ("pulse")]
-        private static extern ErrorCode pa_context_errno (IntPtr context);
+        private static extern Error.Code pa_context_errno (IntPtr context);
         
         public void EnumerateSinkInputs (SinkInputInfoCallback cb)
         {
