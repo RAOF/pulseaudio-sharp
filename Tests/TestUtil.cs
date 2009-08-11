@@ -28,19 +28,19 @@ namespace Pulseaudio
         [Test()]
         public void TestSuccessErrorString ()
         {
-            Assert.AreEqual ("OK", Util.ErrorStringFromErrno (ErrorCode.OK));
+            Assert.AreEqual ("OK", (new Error (Error.Code.OK)).Message);
         }
 
         [Test()]
         public void TestInvalidArgumentErrorString ()
         {
-            Assert.AreEqual ("Invalid argument", Util.ErrorStringFromErrno (ErrorCode.InvalidArgument));
+            Assert.AreEqual ("Invalid argument", (new Error (Error.Code.InvalidArgument)).Message);
         }
 
         [Test()]
         public void TestErrorToStringFormatting ()
         {
-            Error e = new Error (ErrorCode.OK);
+            Error e = new Error (Error.Code.OK);
             Assert.AreEqual ("[Error: OK]", e.ToString ());
         }
     }

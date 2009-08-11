@@ -54,24 +54,54 @@ namespace Pulseaudio
 
     public class Error
     {
-        private ErrorCode error;
+        public enum Code {
+            OK = 0,                 /**< No error */
+            AccessFailure,          /**< Access failure */
+            UnknownCommand,         /**< Unknown command */
+            InvalidArgument,        /**< Invalid argument */
+            EntityExists,           /**< Entity exists */
+            NoSuchEntity,           /**< No such entity */
+            ConnectionRefused,      /**< Connection refused */
+            Protocol,               /**< Protocol error */
+            Timeout,                /**< Timeout */
+            NoAuthKey,              /**< No authorization key */
+            Internal,               /**< Internal error */
+            ConnectionTerminated,   /**< Connection terminated */
+            Killed,                 /**< Entity killed */
+            InvalidServer,          /**< Invalid server */
+            ModuleInitFailed,       /**< Module initialization failed */
+            BadState,               /**< Bad state */
+            NoData,                 /**< No data */
+            Version,                /**< Incompatible protocol version */
+            TooLarge,               /**< Data too large */
+            NotSupported,           /**< Operation not supported \since 0.9.5 */
+            Unknown,                /**< The error code was unknown to the client */
+            NoExtension,            /**< Extension does not exist. \since 0.9.12 */
+            Obsolete,               /**< Obsolete functionality. \since 0.9.15 */
+            NotImplemented,         /**< Missing implementation. \since 0.9.15 */
+            Forked,                 /**< The caller forked without calling execve() and tried to reuse the context. \since 0.9.15 */
+            IO,                     /**< An IO error happened. \since 0.9.16 */
+            PA_ERR_MAX              /**< Not really an error but the first invalid error code */
+        }
+        
+        private Code error;
         private string error_string;
         
-        internal Error (ErrorCode error)
+        internal Error (Code error)
         {
             this.error = error;
         }
 
-        public ErrorCode Code {
+        public Code ErrorCode {
             get {
                 return error;
             }
         }
 
-        public string ErrorString {
+        public string Message {
             get {
                 if (string.IsNullOrEmpty (error_string)) {
-                    error_string = Util.ErrorStringFromErrno (error);
+                    error_string = Marshal.PtrToStringAnsi (pa_strerror (Convert.ToInt32 (error)));
                 }
                 return error_string;
             }
@@ -79,8 +109,11 @@ namespace Pulseaudio
 
         public override string ToString ()
         {
-            return string.Format("[Error: {0}]", Util.ErrorStringFromErrno (error));
+            return string.Format("[Error: {0}]", Message);
         }
+
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_strerror (int error);
     }
 
     public static class Util
