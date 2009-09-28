@@ -264,5 +264,22 @@ namespace Pulseaudio
             Assert.AreEqual (Error.Code.OK, c.LastError.ErrorCode);
             Assert.AreEqual ("OK", c.LastError.Message);
         }
+
+        /*
+         * TODO: Make this less hardcoded to my particular lappy
+         */
+        [Test()]
+        public void GetSinkInfoByIndexReturns ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            string name = "The compiler is broken, and doesn't notice that this local variable is assigned in a delegate";
+            using (Operation o = c.GetSinkInfoByIndex (1,
+                                                       (SinkInfo info, int eol) => {if (eol ==0) {name = info.Name;}})) {
+                o.Wait ();
+            }
+            
+            Assert.AreEqual ("rtp", name);
+        }   
     }
 }

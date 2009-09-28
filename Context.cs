@@ -133,17 +133,34 @@ namespace Pulseaudio
         public delegate void SinkInfoCallback (SinkInfo info, int eol);
         private delegate void pa_sink_info_cb (IntPtr context, SinkInfo info, int eol, IntPtr userdata);
 
+
+        public Operation GetSinkInfoByIndex (UInt32 index, SinkInfoCallback cb)
+        {
+            var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
+                cb (info, eol);
+            });
+            return new Operation (pa_context_get_sink_info_by_index (context, index, wrapped_cb, IntPtr.Zero));
+        }
+        
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_get_sink_info_by_index (IntPtr context, UInt32 index, pa_sink_info_cb cb, IntPtr userdata);
+
+        
         public void SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
         {
             var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => {
                 cb (success);
             });
-            using (Operation o = new Operation (pa_context_set_sink_volume_by_index (context,
-                                                                                     index,
-                                                                                     vol,
-                                                                                     wrapped_cb,
-                                                                                     IntPtr.Zero))) {
-            }                                                                                     
+            try {
+                using (Operation o = new Operation (pa_context_set_sink_volume_by_index (context,
+                                                                                         index,
+                                                                                         vol,
+                                                                                         wrapped_cb,
+                                                                                         IntPtr.Zero))) {
+                }
+            } catch (ArgumentNullException e) {
+                throw new Exception (String.Format ("Error setting sink volume: {0}", LastError.Message));
+            }
         }
         
         [DllImport("pulse")]
