@@ -76,7 +76,7 @@ namespace Pulseaudio
         SampleSpec sample_spec;       /**< Sample spec of this sink */
         ChannelMap channel_map;       /**< Channel map */
         UInt32 owner_module;          /**< Index of the owning module of this sink, or PA_INVALID_INDEX */
-        Volume volume;                /**< Volume of the sink */
+        public Volume volume;         /**< Volume of the sink */
         int mute;                     /**< Mute switch of the sink */
         UInt32 monitor_source;        /**< Index of the monitor source connected to this sink */
         IntPtr monitor_source_name;   /**< The name of the monitor source */
