@@ -112,6 +112,61 @@ namespace Pulseaudio
             return string.Format("[Error: {0}]", Message);
         }
 
+        public override bool Equals (object obj)
+        {
+            Error other = obj as Error;
+            if (other != null) {
+                return (error == other.error);
+            }
+            if (obj is Code) {
+                return error == (Code)obj;
+            }
+            return base.Equals (obj);
+        }
+
+        public bool Equals (Error b)
+        {
+            return error == b.error;
+        }
+
+        public override int GetHashCode ()
+        {
+            return error.GetHashCode ();
+        }
+
+        public static bool operator==(Error a, Code b)
+        {
+            return a.error == b;
+        }
+
+        public static bool operator!=(Error a, Code b)
+        {
+            return !(a==b);
+        }
+
+        public static bool operator==(Code a, Error b)
+        {
+            return b == a;
+        }
+
+        public static bool operator!=(Code a, Error b)
+        {
+            return !(a==b);
+        }
+
+        public static bool operator==(Error a, Error b)
+        {
+            if (Object.ReferenceEquals (a, b)) {
+                return true;
+            }
+            return a.error == b.error;
+        }
+
+        public static bool operator!=(Error a, Error b)
+        {
+            return !(a==b);
+        }
+
         [DllImport ("pulse")]
         private static extern IntPtr pa_strerror (int error);
     }

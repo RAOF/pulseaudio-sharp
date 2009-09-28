@@ -43,5 +43,48 @@ namespace Pulseaudio
             Error e = new Error (Error.Code.OK);
             Assert.AreEqual ("[Error: OK]", e.ToString ());
         }
+
+        [Test()]
+        public void TestEqualCodesMeanEqualErrors ()
+        {
+            Error first = new Error (Error.Code.InvalidArgument);
+            Error second = new Error (Error.Code.InvalidArgument);
+
+            Assert.IsTrue (first.Equals (second));
+        }
+
+        [Test()]
+        public void TestEqualityOperatorReturnsTrueForEqualErrors ()
+        {
+            Error first = new Error (Error.Code.BadState);
+            Error second = new Error (Error.Code.BadState);
+
+            Assert.IsTrue (first == second);
+        }
+
+        [Test()]
+        public void TestEqualityOperatorErrorAndCode ()
+        {
+            Error e = new Error (Error.Code.ConnectionTerminated);
+
+            Assert.IsTrue (e == Error.Code.ConnectionTerminated);
+        }
+
+        [Test()]
+        public void TestEqualityOperatorReturnsFalseForUnequalErrors ()
+        {
+            Error first = new Error (Error.Code.AccessFailure);
+            Error second = new Error (Error.Code.OK);
+
+            Assert.IsFalse (first == second);
+        }
+
+        [Test()]
+        public void TestEqualityOperatorErrorAndUnequalCode ()
+        {
+            Error e = new Error (Error.Code.EntityExists);
+
+            Assert.IsFalse (e == Error.Code.Forked);
+        }
     }
 }
