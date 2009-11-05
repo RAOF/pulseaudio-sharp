@@ -42,7 +42,7 @@ namespace Pulseaudio
                 g::MainContext.Iteration ();
             }
             
-            Operation opn = c.EnumerateSinks (new Context.SinkInfoCallback ((a,b) => {System.Console.Write ("Hello");}));
+            Operation opn = c.EnumerateSinks (new Context.SinkInfoCallback ((a,b) => {}));
             opn.Wait ();
             Assert.IsTrue (opn.State == Operation.Status.Done);
         }
