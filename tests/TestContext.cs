@@ -278,7 +278,7 @@ namespace Pulseaudio
         {
             Context c = new Context ();
             c.ConnectAndWait ();
-            string name = "The compiler is broken, and doesn't notice that this local variable is assigned in a delegate";
+            string name = "Unassigned value";
             using (Operation o = c.GetSinkInfoByIndex (1,
                                                        (SinkInfo info, int eol) => {if (eol ==0) {name = info.Name;}})) {
                 o.Wait ();
