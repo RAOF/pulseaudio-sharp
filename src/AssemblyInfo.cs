@@ -24,3 +24,6 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyDelaySign(false)]
 [assembly: AssemblyKeyFile("")]
+
+// Make testing easier!
+[assembly:InternalsVisibleTo("Test")]
