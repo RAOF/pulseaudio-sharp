@@ -250,14 +250,13 @@ namespace Pulseaudio
             var volume_set = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context c = new Context ();
             Volume vol = new Volume ();    //Dummy, because compiler can't see the set in the delegate.
-            c.Ready += delegate {
-                Operation o;
-                using (o = c.GetSinkInfoByIndex (1, (SinkInfo info, int eol) => {if (eol == 0) {vol = info.volume;}})) {
-//                    o.Wait ();
-                }
-                vol.Set (1);
-                c.SetSinkVolume (1, vol, (int success) => {volume_set.Set ();});
-            };
+            c.ConnectAndWait ();
+            Operation o;
+            using (o = c.GetSinkInfoByIndex (1, (SinkInfo info, int eol) => {if (eol == 0) {vol = info.volume;}})) {
+                o.Wait ();
+            }
+            vol.Set (1);
+            c.SetSinkVolume (1, vol, (int success) => {volume_set.Set ();});
             RunUntilEventSignal (c.Connect, volume_set, "Timeout waiting for volume set");
         }
 
