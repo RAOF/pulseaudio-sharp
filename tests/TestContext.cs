@@ -277,7 +277,7 @@ namespace Pulseaudio
         }
 
         [Test()]
-        [ExpectedException (typeof (Exception), "Error setting sink volume: Invalid argument")]
+        [ExpectedException (typeof (Exception), ExpectedMessage = "Error setting sink volume: Invalid argument")]
         public void VolumeChangeThrowsOnInvalidArgument ()
         {
             Context c = new Context ();
