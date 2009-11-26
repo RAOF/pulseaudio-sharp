@@ -68,27 +68,27 @@ namespace Pulseaudio
     }
 
     [StructLayout (LayoutKind.Sequential)]
-    public class SinkInfo
+    internal class SinkInfo
     {
         IntPtr name;                  /**< Name of the sink */
-        UInt32 index;                 /**< Index of the sink */
+        public UInt32 index;                 /**< Index of the sink */
         IntPtr description;           /**< Description of this sink */
-        SampleSpec sample_spec;       /**< Sample spec of this sink */
-        ChannelMap channel_map;       /**< Channel map */
-        UInt32 owner_module;          /**< Index of the owning module of this sink, or PA_INVALID_INDEX */
+        public SampleSpec sample_spec;       /**< Sample spec of this sink */
+        public ChannelMap channel_map;       /**< Channel map */
+        public UInt32 owner_module;          /**< Index of the owning module of this sink, or PA_INVALID_INDEX */
         public Volume volume;         /**< Volume of the sink */
-        int mute;                     /**< Mute switch of the sink */
-        UInt32 monitor_source;        /**< Index of the monitor source connected to this sink */
+        public int mute;                     /**< Mute switch of the sink */
+        public UInt32 monitor_source;        /**< Index of the monitor source connected to this sink */
         IntPtr monitor_source_name;   /**< The name of the monitor source */
-        UInt64 latency;               /**< Length of queued audio in the output buffer. */
+        public UInt64 latency;               /**< Length of queued audio in the output buffer. */
         IntPtr driver;                /**< Driver name. */
-        SinkFlags flags;              /**< Flags */
+        public SinkFlags flags;              /**< Flags */
         IntPtr proplist;              /**< Property list \since 0.9.11 */
-        UInt64 configured_latency;    /**< The latency this device has been configured to. \since 0.9.11 */
-        UInt32 base_volume;           /**< Some kind of "base" volume that refers to unamplified/unattenuated volume in the context of the output device. \since 0.9.15 */
-        SinkState state;              /**< State \since 0.9.15 */
-        UInt32 n_volume_steps;        /**< Number of volume steps for sinks which do not support arbitrary volumes. \since 0.9.15 */
-        UInt32 card;                  /**< Card index, or PA_INVALID_INDEX. \since 0.9.15 */
+        public UInt64 configured_latency;    /**< The latency this device has been configured to. \since 0.9.11 */
+        public UInt32 base_volume;           /**< Some kind of "base" volume that refers to unamplified/unattenuated volume in the context of the output device. \since 0.9.15 */
+        public SinkState state;              /**< State \since 0.9.15 */
+        public UInt32 n_volume_steps;        /**< Number of volume steps for sinks which do not support arbitrary volumes. \since 0.9.15 */
+        public UInt32 card;                  /**< Card index, or PA_INVALID_INDEX. \since 0.9.15 */
         
         public string Name {
             get {
@@ -97,8 +97,7 @@ namespace Pulseaudio
         }
 
         public string Description {
-            get {
-                return Marshal.PtrToStringAnsi (description);
+            get {                return Marshal.PtrToStringAnsi (description);
             }
         }
 
@@ -116,6 +115,38 @@ namespace Pulseaudio
         
         public SinkInfo()
         {
+        }
+    }
+
+    public class Sink {
+        private SinkInfo info;
+        private Context context;
+
+        internal Sink (SinkInfo info, Context c)
+        {
+            context = c;
+            this.info = info;
+            Name = info.Name;
+            Description = info.Description;
+        }
+        
+        public string Name {
+            get; private set;
+        }
+
+        public string Description {
+            get; private set;
+        }
+
+        public delegate void VolumeCallback (Volume vol);
+        public Operation GetVolume (VolumeCallback cb)
+        {
+            return context.GetSinkInfoByIndex (info.index, (SinkInfo i, int eol) =>  cb (i.volume) );
+        }
+
+        public Operation SetVolume (Volume vol, Context.OperationSuccessCallback cb)
+        {
+            return context.SetSinkVolume (info.index, vol, cb);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Pulseaudio
 {    
     public class Context
     {
-        IntPtr context;
+        HandleRef context;
         MainLoop loop;
 
         public delegate void ConnectionStateHandler ();
@@ -37,7 +37,7 @@ namespace Pulseaudio
         public Context ()
         {
             loop = new GLibMainLoop ();
-            context = pa_context_new (loop.GetAPI (), "LibFoo");
+            context = new HandleRef (this, pa_context_new (loop.GetAPI (), "LibFoo"));
             pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
         }
 
@@ -76,7 +76,8 @@ namespace Pulseaudio
 
         private void ContextNotifyHandler (IntPtr context, IntPtr userdata)
         {
-            switch (pa_context_get_state (context)) {
+            HandleRef c = new HandleRef (this, context);
+            switch (pa_context_get_state (c)) {
             case ConnectionState.Ready:
                 if (Ready != null) {
                     Ready ();
@@ -108,7 +109,7 @@ namespace Pulseaudio
         }
         
         [DllImport ("pulse")]
-        private static extern Error.Code pa_context_errno (IntPtr context);
+        private static extern Error.Code pa_context_errno (HandleRef context);
         
         public void EnumerateSinkInputs (SinkInputInfoCallback cb)
         {
@@ -122,7 +123,7 @@ namespace Pulseaudio
         public delegate void SinkInputInfoCallback (SinkInputInfo info, int eol);
         private delegate void pa_sink_input_info_cb (IntPtr context, SinkInputInfo info, int eol, IntPtr userdata);
 
-        public Operation EnumerateSinks (SinkInfoCallback cb)
+        internal Operation EnumerateSinks (SinkInfoCallback cb)
         {
             var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
@@ -130,11 +131,22 @@ namespace Pulseaudio
             return new Operation (pa_context_get_sink_info_list (context, wrapped_cb, IntPtr.Zero));
         }                                   
 
-        public delegate void SinkInfoCallback (SinkInfo info, int eol);
+        internal delegate void SinkInfoCallback (SinkInfo info, int eol);
         private delegate void pa_sink_info_cb (IntPtr context, SinkInfo info, int eol, IntPtr userdata);
 
 
-        public Operation GetSinkInfoByIndex (UInt32 index, SinkInfoCallback cb)
+        public Operation EnumerateSinks (SinkCallback cb)
+        {
+            return EnumerateSinks ((SinkInfo info, int eol) => {
+                if (eol == 0) {
+                    cb (new Sink(info, this));
+                }
+            });
+        }
+
+        public delegate void SinkCallback (Sink s);
+        
+        internal Operation GetSinkInfoByIndex (UInt32 index, SinkInfoCallback cb)
         {
             var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
@@ -143,7 +155,7 @@ namespace Pulseaudio
         }
         
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_get_sink_info_by_index (IntPtr context, UInt32 index, pa_sink_info_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_get_sink_info_by_index (HandleRef context, UInt32 index, pa_sink_info_cb cb, IntPtr userdata);
 
         
         public void SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
@@ -162,9 +174,10 @@ namespace Pulseaudio
                 throw new Exception (String.Format ("Error setting sink volume: {0}", LastError.Message));
             }
         }
+
         
         [DllImport("pulse")]
-        private static extern IntPtr pa_context_set_sink_volume_by_index(IntPtr context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_set_sink_volume_by_index(HandleRef context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
         
         public delegate void OperationSuccessCallback (int success);
         private delegate void pa_context_success_cb (IntPtr context, int success, IntPtr userdata);
@@ -172,23 +185,23 @@ namespace Pulseaudio
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_new (IntPtr mainloop_api, string appName);
         [DllImport ("pulse")]
-        private static extern int pa_context_connect (IntPtr context, string server, ContextConnectionFlags flags, 
+        private static extern int pa_context_connect (HandleRef context, string server, ContextConnectionFlags flags, 
                                                       IntPtr spawnApi);
         [DllImport ("pulse")]
-        private static extern UInt32 pa_context_get_server_protocol_version (IntPtr context);
+        private static extern UInt32 pa_context_get_server_protocol_version (HandleRef context);
         [DllImport ("pulse")]
-        private static extern void pa_context_set_state_callback (IntPtr context, 
+        private static extern void pa_context_set_state_callback (HandleRef context, 
                                                                   ContextNotifyCB cb, 
                                                                   IntPtr userdata);
         [DllImport ("pulse")]
-        private static extern ConnectionState pa_context_get_state (IntPtr context);
+        private static extern ConnectionState pa_context_get_state (HandleRef context);
 
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_get_sink_input_info_list (IntPtr context, 
+        private static extern IntPtr pa_context_get_sink_input_info_list (HandleRef context, 
                                                                           pa_sink_input_info_cb cb,
                                                                           IntPtr userdata);
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_get_sink_info_list (IntPtr context, 
+        private static extern IntPtr pa_context_get_sink_info_list (HandleRef context, 
                                                                     pa_sink_info_cb cb, 
                                                                     IntPtr userdata);
     }

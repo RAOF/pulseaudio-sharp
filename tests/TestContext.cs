@@ -18,6 +18,7 @@
 // 
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -151,11 +152,10 @@ namespace Pulseaudio
             var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
 
             Context c = new Context ();
-            c.Ready += delegate {
-                c.EnumerateSinks ((cb, eol) => {
+            c.ConnectAndWait ();
+            c.EnumerateSinks ((cb, eol) => {
                     callback_called.Set ();
-                });
-            };
+            });
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
@@ -244,6 +244,22 @@ namespace Pulseaudio
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
+        [Test ()]
+        public void SinksAreValidOutsideEnumerateCallback ()
+        {
+            Context c = new Context ();
+            List<Sink> sinks = new List<Sink> ();
+            c.ConnectAndWait ();
+            Context.SinkCallback AppendToListCB = (Sink s) => {
+                sinks.Add (s);
+            };
+            using (Operation o = c.EnumerateSinks (AppendToListCB)) {
+                o.Wait ();
+            }
+            Assert.Contains ("Internal Audio Analog Stereo", (from sink in sinks select sink.Description).ToArray ());
+            Assert.Contains ("rtp", (from sink in sinks select sink.Name).ToArray ());
+        }
+
         [Test()]
         public void VolumeChangeCallbackRuns ()
         {
@@ -284,6 +300,6 @@ namespace Pulseaudio
             }
             
             Assert.AreEqual ("rtp", name);
-        }   
+        }
     }
 }
