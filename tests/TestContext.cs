@@ -277,6 +277,18 @@ namespace Pulseaudio
         }
 
         [Test()]
+        [ExpectedException (typeof (Exception), "Error setting sink volume: Invalid argument")]
+        public void VolumeChangeThrowsOnInvalidArgument ()
+        {
+            Context c = new Context ();
+            Volume invalidVol = new Volume ();
+            c.ConnectAndWait ();
+            using (Operation o = c.SetSinkVolume (1, invalidVol, (_) => {})) {
+                o.Wait ();
+            }
+        }
+
+        [Test()]
         public void SuccessfulConnectionHasErrorOK ()
         {
             Context c = new Context ();
