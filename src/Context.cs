@@ -139,7 +139,7 @@ namespace Pulseaudio
         {
             return EnumerateSinks ((SinkInfo info, int eol) => {
                 if (eol == 0) {
-                    cb (new Sink(info, this));
+                    cb (Sink.GetSinkByInfo (this, info));
                 }
             });
         }

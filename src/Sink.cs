@@ -18,6 +18,8 @@
 // 
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Pulseaudio
@@ -68,7 +70,7 @@ namespace Pulseaudio
     }
 
     [StructLayout (LayoutKind.Sequential)]
-    internal class SinkInfo
+    public class SinkInfo
     {
         IntPtr name;                  /**< Name of the sink */
         public UInt32 index;                 /**< Index of the sink */
@@ -119,10 +121,26 @@ namespace Pulseaudio
     }
 
     public class Sink {
+        
+        private static Dictionary<string, Sink> sinkmap;
+
+        static Sink ()
+        {
+            sinkmap = new Dictionary<string, Sink> ();
+        }
+
+        public static Sink GetSinkByInfo (Context c, SinkInfo i)
+        {
+            if (!sinkmap.ContainsKey (i.Name)) {
+                sinkmap[i.Name] = new Sink (i, c);
+            }
+            return sinkmap[i.Name];
+        }
+        
         private SinkInfo info;
         private Context context;
 
-        internal Sink (SinkInfo info, Context c)
+        private Sink (SinkInfo info, Context c)
         {
             context = c;
             this.info = info;
