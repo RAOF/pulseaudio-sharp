@@ -121,12 +121,14 @@ namespace Pulseaudio
     }
 
     public class Sink {
-        
-        private static Dictionary<string, Sink> sinkmap;
-
-        static Sink ()
-        {
-            sinkmap = new Dictionary<string, Sink> ();
+        private static Dictionary<string, Sink> _sinkmap;
+        private static Dictionary<string, Sink> sinkmap {
+            get {
+                if (_sinkmap == null) {
+                    _sinkmap = new Dictionary<string, Sink> ();
+                }
+                return _sinkmap;
+            }
         }
 
         public static Sink GetSinkByInfo (Context c, SinkInfo i)
