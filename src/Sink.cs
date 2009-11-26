@@ -133,8 +133,16 @@ namespace Pulseaudio
         {
             if (!sinkmap.ContainsKey (i.Name)) {
                 sinkmap[i.Name] = new Sink (i, c);
+            } else {
+                sinkmap[i.Name].UpdateFromInfo (i);
             }
             return sinkmap[i.Name];
+        }
+
+        private void UpdateFromInfo (SinkInfo i)
+        {
+            info = i;
+            Description = i.Description;
         }
         
         private SinkInfo info;
