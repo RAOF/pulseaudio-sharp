@@ -158,18 +158,17 @@ namespace Pulseaudio
         private static extern IntPtr pa_context_get_sink_info_by_index (HandleRef context, UInt32 index, pa_sink_info_cb cb, IntPtr userdata);
 
         
-        public void SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
+        public Operation SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
         {
             var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => {
                 cb (success);
             });
             try {
-                using (Operation o = new Operation (pa_context_set_sink_volume_by_index (context,
-                                                                                         index,
-                                                                                         vol,
-                                                                                         wrapped_cb,
-                                                                                         IntPtr.Zero))) {
-                }
+                return new Operation (pa_context_set_sink_volume_by_index (context,
+                                                                           index,
+                                                                           vol,
+                                                                           wrapped_cb,
+                                                                           IntPtr.Zero));
             } catch (ArgumentNullException e) {
                 throw new Exception (String.Format ("Error setting sink volume: {0}", LastError.Message));
             }
