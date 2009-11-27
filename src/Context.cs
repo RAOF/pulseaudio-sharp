@@ -203,5 +203,111 @@ namespace Pulseaudio
         private static extern IntPtr pa_context_get_sink_info_list (HandleRef context, 
                                                                     pa_sink_info_cb cb, 
                                                                     IntPtr userdata);
+
+
+
+        private EventHandler<RawSinkEventArgs> _rawSinkEventHandler;
+        private readonly object eventHandlerLock = new object ();
+        internal event EventHandler<RawSinkEventArgs> RawSinkEvent {
+            add {
+                lock (eventHandlerLock) {
+                    if (_rawSinkEventHandler == null) {
+                        Operation o = new Operation (pa_context_subscribe (context, 
+                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK,
+                                                                           (a,b,c) => {;},
+                                                                           IntPtr.Zero));
+                        o.Dispose ();
+                    }                        
+                    _rawSinkEventHandler += value;
+                }
+            }
+            remove {
+                lock (eventHandlerLock) {
+                    _rawSinkEventHandler -= value;
+                    if (_rawSinkEventHandler == null) {
+                        Operation o = new Operation (pa_context_subscribe (context, 
+                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL,
+                                                                           (a,b,c) => {;},
+                                                                           IntPtr.Zero));
+                        o.Dispose ();
+                    }
+                }
+            }
+        }
+
+        private void SubscriptionEventHandler (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata)
+        {
+            EventType action = EventType.Error;
+            switch (e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_TYPE_MASK) {
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_CHANGE:
+                action = EventType.Changed;
+                break;
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_NEW:
+                action = EventType.New;
+                break;
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_REMOVE:
+                action = EventType.Removed;
+                break;
+            }
+            if ((e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK) == 0x0000) {
+                EventHandler<RawSinkEventArgs> handler;
+                lock (eventHandlerLock) {
+                    handler = _rawSinkEventHandler;
+                }
+                if (handler != null) {
+                    handler (this, new RawSinkEventArgs { action = action, index = index });
+                }
+            }
+        }
+        
+        private delegate void SubscriptionEventCB (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata);
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_subscribe(HandleRef context, 
+                                                          SubscriptionMask m, 
+                                                          pa_context_success_cb cb, 
+                                                          IntPtr userdata);
+        [Flags]
+        private enum SubscriptionMask : uint {
+            PA_SUBSCRIPTION_MASK_NULL = 0x0000U,/**< No events */
+            PA_SUBSCRIPTION_MASK_SINK = 0x0001U,/**< Sink events */            
+            PA_SUBSCRIPTION_MASK_SOURCE = 0x0002U,/**< Source events */            
+            PA_SUBSCRIPTION_MASK_SINK_INPUT = 0x0004U,/**< Sink input events */
+            PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT = 0x0008U,/**< Source output events */
+            PA_SUBSCRIPTION_MASK_MODULE = 0x0010U,/**< Module events */
+            PA_SUBSCRIPTION_MASK_CLIENT = 0x0020U,/**< Client events */
+            PA_SUBSCRIPTION_MASK_SAMPLE_CACHE = 0x0040U,/**< Sample cache events */
+            PA_SUBSCRIPTION_MASK_SERVER = 0x0080U,/**< Other global server changes. */
+            PA_SUBSCRIPTION_MASK_AUTOLOAD = 0x0100U,/**< \deprecated Autoload table events. */
+            PA_SUBSCRIPTION_MASK_CARD = 0x0200U,/**< Card events. \since 0.9.15 */
+            PA_SUBSCRIPTION_MASK_ALL = 0x02ffU/**< Catch all events */
+        }
+        [Flags]
+        private enum SubscriptionEventMask : uint {
+            PA_SUBSCRIPTION_EVENT_SINK = 0x0000U,/**< Event type: Sink */
+            PA_SUBSCRIPTION_EVENT_SOURCE = 0x0001U,/**< Event type: Source */
+            PA_SUBSCRIPTION_EVENT_SINK_INPUT = 0x0002U,/**< Event type: Sink input */
+            PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT = 0x0003U,/**< Event type: Source output */
+            PA_SUBSCRIPTION_EVENT_MODULE = 0x0004U,/**< Event type: Module */
+            PA_SUBSCRIPTION_EVENT_CLIENT = 0x0005U,/**< Event type: Client */
+            PA_SUBSCRIPTION_EVENT_SAMPLE_CACHE = 0x0006U,/**< Event type: Sample cache item */
+            PA_SUBSCRIPTION_EVENT_SERVER = 0x0007U,/**< Event type: Global server change, only occurring with PA_SUBSCRIPTION_EVENT_CHANGE. */
+            PA_SUBSCRIPTION_EVENT_AUTOLOAD = 0x0008U,/**< \deprecated Event type: Autoload table changes. */
+            PA_SUBSCRIPTION_EVENT_CARD = 0x0009U,/**< Event type: Card \since 0.9.15 */
+            PA_SUBSCRIPTION_EVENT_FACILITY_MASK = 0x000FU,/**< A mask to extract the event type from an event value */
+            PA_SUBSCRIPTION_EVENT_NEW = 0x0000U,/**< A new object was created */
+            PA_SUBSCRIPTION_EVENT_CHANGE = 0x0010U,/**< A property of the object was modified */
+            PA_SUBSCRIPTION_EVENT_REMOVE = 0x0020U,/**< An object was removed */
+            PA_SUBSCRIPTION_EVENT_TYPE_MASK = 0x0030U/**< A mask to extract the event operation from an event value */
+        }
+        public enum EventType {
+            New,
+            Changed,
+            Removed,
+            Error
+        }
+        public class RawSinkEventArgs : EventArgs {
+            public EventType action { get; set;}
+            public UInt32 index {get; set; }
+        }
     }
 }
