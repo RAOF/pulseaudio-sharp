@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = -I m4 -I m4/shamrock
+ACLOCAL_AMFLAGS = -I m4
 
 CSC_V = $(CSC_V_$(V))
 CSC_V_ = $(CSC_V_$(AM_DEFAULT_VERBOSITY))
@@ -36,6 +36,7 @@ Test_DLL_SOURCES = 	tests/TestChannel.cs \
 			tests/TestMainLoop.cs \
 			tests/TestPropList.cs \
 			tests/TestSample.cs \
+			tests/TestSink.cs \
 			tests/TestUtil.cs \
 			tests/TestVolume.cs
 Test_DLL_CSCFLAGS = -pkg:nunit -pkg:glib-sharp-2.0 -r:PulseAudio.dll
