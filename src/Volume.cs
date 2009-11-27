@@ -65,6 +65,14 @@ namespace Pulseaudio
             pa_cvolume_set (this, channels,  (UInt32)(val * norm));
         }
 
+        public Volume Copy ()
+        {
+            Volume retVal = new Volume ();
+            retVal.channels = channels;
+            values.CopyTo (retVal.values, 0);
+            return retVal;
+        }
+        
         public override bool Equals (object obj)
         {
             if (obj is Volume) {
