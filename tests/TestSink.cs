@@ -45,23 +45,5 @@ namespace Pulseaudio
             Assert.Contains ("Internal Audio Analog Stereo", (from sink in sinks select sink.Description).ToList ());
         }
 
-        [Test()]
-        public void TestSinkInstancesAreUnique ()
-        {
-            Context c = new Context ();
-            c.ConnectAndWait ();
-            var listOne = new List<Sink> ();
-            var listTwo = new List<Sink> ();
-            using (Operation o = c.EnumerateSinks ((Sink sink) => listOne.Add (sink))) {
-                o.Wait ();
-            }
-            using (Operation o = c.EnumerateSinks ((Sink sink) => listTwo.Add (sink))) {
-                o.Wait ();
-            }
-            foreach (Sink s in listOne) {
-                Assert.AreSame (s, listTwo.Find ((Sink sink) => s.Name == sink.Name));
-            }
-        }
-
     }
 }

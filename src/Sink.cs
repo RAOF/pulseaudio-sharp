@@ -121,26 +121,6 @@ namespace Pulseaudio
     }
 
     public class Sink {
-        private static Dictionary<string, Sink> _sinkmap;
-        private static Dictionary<string, Sink> sinkmap {
-            get {
-                if (_sinkmap == null) {
-                    _sinkmap = new Dictionary<string, Sink> ();
-                }
-                return _sinkmap;
-            }
-        }
-
-        public static Sink GetSinkByInfo (Context c, SinkInfo i)
-        {
-            if (!sinkmap.ContainsKey (i.Name)) {
-                sinkmap[i.Name] = new Sink (i, c);
-            } else {
-                sinkmap[i.Name].UpdateFromInfo (i);
-            }
-            return sinkmap[i.Name];
-        }
-
         private void UpdateFromInfo (SinkInfo i)
         {
             info = i;
@@ -150,7 +130,7 @@ namespace Pulseaudio
         private SinkInfo info;
         private Context context;
 
-        private Sink (SinkInfo info, Context c)
+        public Sink (Context c, SinkInfo info)
         {
             context = c;
             this.info = info;
