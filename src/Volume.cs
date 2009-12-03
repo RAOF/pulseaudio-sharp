@@ -15,9 +15,10 @@
 // 
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with Pulseaudio#.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 
 using System;
+using System.Text;
 using System.Runtime.InteropServices;
 
 namespace Pulseaudio
@@ -95,11 +96,22 @@ namespace Pulseaudio
             return !(a==b);
         }
 
+        public override string ToString ()
+        {
+            StringBuilder buffer = new StringBuilder (PA_CVOLUME_SNPRINT_BUFFER_MAX);
+            pa_cvolume_snprint (buffer, new IntPtr (PA_CVOLUME_SNPRINT_BUFFER_MAX), this);
+            return buffer.ToString ();
+        }
+
+
         [DllImport ("pulse")]
         private static extern int pa_cvolume_equal (Volume a, Volume b);
         [DllImport ("pulse")]
         private static extern void pa_cvolume_init ([Out] Volume a);
         [DllImport ("pulse")]
         private static extern void pa_cvolume_set ([In, Out] Volume vol, uint channels, UInt32 val);
+        [DllImport ("pulse")]
+        private static extern void pa_cvolume_snprint (System.Text.StringBuilder buffer, IntPtr bufferSize, Volume vol);
+        static readonly int PA_CVOLUME_SNPRINT_BUFFER_MAX = 320;
     }
 }
