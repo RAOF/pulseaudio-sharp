@@ -99,7 +99,7 @@ namespace Pulseaudio
         public override string ToString ()
         {
             StringBuilder buffer = new StringBuilder (PA_CVOLUME_SNPRINT_BUFFER_MAX);
-            pa_cvolume_snprint (buffer, new IntPtr (PA_CVOLUME_SNPRINT_BUFFER_MAX), this);
+            pa_cvolume_snprint (buffer, new IntPtr (buffer.Capacity), this);
             return buffer.ToString ();
         }
 
