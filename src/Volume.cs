@@ -35,8 +35,8 @@ namespace Pulseaudio
         [MarshalAs (UnmanagedType.ByValArray, SizeConst=Constants.MaxChannels)]
         private UInt32 [] values;
 
-        private const UInt32 norm = 0x10000U;
-        private const UInt32 mute = 0;
+        private static readonly UInt32 norm = 0x10000U;
+        private static readonly UInt32 mute = 0;
 
         public Volume()
         {
@@ -103,6 +103,11 @@ namespace Pulseaudio
             return buffer.ToString ();
         }
 
+        public double ToScalarAvg ()
+        {
+            UInt32 rawVol = pa_cvolume_avg (this);
+            return ((((double)rawVol) - mute) / norm);
+        }
 
         [DllImport ("pulse")]
         private static extern int pa_cvolume_equal (Volume a, Volume b);
@@ -113,5 +118,7 @@ namespace Pulseaudio
         [DllImport ("pulse")]
         private static extern void pa_cvolume_snprint (System.Text.StringBuilder buffer, IntPtr bufferSize, Volume vol);
         static readonly int PA_CVOLUME_SNPRINT_BUFFER_MAX = 320;
+        [DllImport ("pulse")]
+        private static extern UInt32 pa_cvolume_avg (Volume vol);
     }
 }

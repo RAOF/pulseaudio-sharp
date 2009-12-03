@@ -64,5 +64,14 @@ namespace Pulseaudio
             b.Set (0);
             Assert.IsTrue (a != b);
         }
+
+        [Test()]
+        public void ScalarAvgGivesSetValue ()
+        {
+            Volume a = new Volume ();
+            const double scalarVol = 0.342;
+            a.Set (scalarVol);
+            Assert.AreEqual (scalarVol, a.ToScalarAvg (), 0.00001);
+        }
     }
 }
