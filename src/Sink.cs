@@ -123,10 +123,19 @@ namespace Pulseaudio
     public class Sink {
         private void UpdateFromInfo (SinkInfo i)
         {
+            if (info.volume != i.volume) {
+                EventHandler<VolumeChangedEventArgs> handler;
+                lock (eventHandlerLock) {
+                    handler = _volumeChangedHandler;
+                }
+                if (handler != null) {
+                    handler (this, new VolumeChangedEventArgs (i.volume));
+                }
+            }
             info = i;
             Description = i.Description;
         }
-        
+
         private SinkInfo info;
         private Context context;
 
@@ -149,12 +158,63 @@ namespace Pulseaudio
         public delegate void VolumeCallback (Volume vol);
         public Operation GetVolume (VolumeCallback cb)
         {
-            return context.GetSinkInfoByIndex (info.index, (SinkInfo i, int eol) =>  cb (i.volume) );
+            return context.GetSinkInfoByIndex (info.index, (SinkInfo i, int eol) =>
+            {
+                if (eol == 0) {
+                    cb (i.volume);
+                }} );
         }
 
         public Operation SetVolume (Volume vol, Context.OperationSuccessCallback cb)
         {
             return context.SetSinkVolume (info.index, vol, cb);
+        }
+
+
+        private readonly object eventHandlerLock = new object ();
+        private EventHandler<VolumeChangedEventArgs> _volumeChangedHandler;
+        public event EventHandler<VolumeChangedEventArgs> VolumeChanged {
+            add {
+                lock (eventHandlerLock) {
+                    if (_volumeChangedHandler == null) {
+                        context.RawSinkEvent += HandleRawSinkEvent;
+                    }
+                    _volumeChangedHandler += value;
+                }
+            }
+            remove {
+                lock (eventHandlerLock) {
+                    _volumeChangedHandler -= value;
+                    if (_volumeChangedHandler == null) {
+                        context.RawSinkEvent -= HandleRawSinkEvent;
+                    }
+                }
+            }
+        }
+
+        void HandleRawSinkEvent (object sender, Context.RawSinkEventArgs e)
+        {
+            Context c = sender as Context;
+            if (e.action == Context.EventType.Changed) {
+                if (e.index == info.index) {
+                    Operation o = c.GetSinkInfoByIndex (info.index, (SinkInfo i, int eol) =>
+                    {
+                        if (eol == 0) {
+                            UpdateFromInfo (i);
+                        }});
+                    o.Dispose ();
+                }
+            }
+        }
+
+        public class VolumeChangedEventArgs : EventArgs
+        {
+            public VolumeChangedEventArgs (Volume vol)
+            {
+                newVolume = vol;
+            }
+
+            public Volume newVolume { get; private set; }
         }
     }
 }

@@ -212,12 +212,13 @@ namespace Pulseaudio
             add {
                 lock (eventHandlerLock) {
                     if (_rawSinkEventHandler == null) {
-                        Operation o = new Operation (pa_context_subscribe (context, 
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK,
-                                                                           (a,b,c) => {;},
+                        pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
+                        Operation o = new Operation (pa_context_subscribe (context,
+                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_ALL,
+                                                                           (a, b, c) => {;},
                                                                            IntPtr.Zero));
                         o.Dispose ();
-                    }                        
+                    }
                     _rawSinkEventHandler += value;
                 }
             }
@@ -259,18 +260,23 @@ namespace Pulseaudio
                 }
             }
         }
-        
+
         private delegate void SubscriptionEventCB (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata);
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_subscribe(HandleRef context, 
-                                                          SubscriptionMask m, 
-                                                          pa_context_success_cb cb, 
+        private static extern IntPtr pa_context_subscribe(HandleRef context,
+                                                          SubscriptionMask m,
+                                                          pa_context_success_cb cb,
                                                           IntPtr userdata);
+        [DllImport ("pulse")]
+        private static extern void pa_context_set_subscribe_callback (HandleRef context,
+                                                                      SubscriptionEventCB cb,
+                                                                      IntPtr userData);
+
         [Flags]
         private enum SubscriptionMask : uint {
             PA_SUBSCRIPTION_MASK_NULL = 0x0000U,/**< No events */
-            PA_SUBSCRIPTION_MASK_SINK = 0x0001U,/**< Sink events */            
-            PA_SUBSCRIPTION_MASK_SOURCE = 0x0002U,/**< Source events */            
+            PA_SUBSCRIPTION_MASK_SINK = 0x0001U,/**< Sink events */
+            PA_SUBSCRIPTION_MASK_SOURCE = 0x0002U,/**< Source events */
             PA_SUBSCRIPTION_MASK_SINK_INPUT = 0x0004U,/**< Sink input events */
             PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT = 0x0008U,/**< Source output events */
             PA_SUBSCRIPTION_MASK_MODULE = 0x0010U,/**< Module events */
