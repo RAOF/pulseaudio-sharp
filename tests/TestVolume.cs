@@ -73,5 +73,27 @@ namespace Pulseaudio
             a.Set (scalarVol);
             Assert.AreEqual (scalarVol, a.ToScalarAvg (), 0.00001);
         }
+
+        [Test()]
+        public void ModifyWithPositiveValueIncreasesAvg ()
+        {
+            Volume a = new Volume ();
+            const double scalarVolBase = 0.4;
+            const double scalarVolInc = 0.2;
+            a.Set (scalarVolBase);
+            a.Modify (scalarVolInc);
+            Assert.AreEqual (scalarVolBase + scalarVolInc, a.ToScalarAvg (), 0.00001);
+        }
+
+        [Test()]
+        public void ModifyWithNegativeValueDecreasesAvg ()
+        {
+            Volume a = new Volume ();
+            const double scalarVolBase = 0.8;
+            const double scalarVolAdjust = -0.4;
+            a.Set (scalarVolBase);
+            a.Modify (scalarVolAdjust);
+            Assert.AreEqual (scalarVolBase + scalarVolAdjust, a.ToScalarAvg (), 0.00001);
+        }
     }
 }

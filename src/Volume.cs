@@ -109,6 +109,15 @@ namespace Pulseaudio
             return ((((double)rawVol) - mute) / norm);
         }
 
+        public void Modify (double amount)
+        {
+            if (amount > 0) {
+                pa_cvolume_inc (this, (UInt32)((amount - mute) * norm));
+            } else {
+                pa_cvolume_dec (this, (UInt32)((-amount - mute) * norm));
+            }
+        }
+
         [DllImport ("pulse")]
         private static extern int pa_cvolume_equal (Volume a, Volume b);
         [DllImport ("pulse")]
@@ -120,5 +129,9 @@ namespace Pulseaudio
         static readonly int PA_CVOLUME_SNPRINT_BUFFER_MAX = 320;
         [DllImport ("pulse")]
         private static extern UInt32 pa_cvolume_avg (Volume vol);
+        [DllImport ("pulse")]
+        private static extern void pa_cvolume_inc ([In, Out]Volume vol, UInt32 amount);
+        [DllImport ("pulse")]
+        private static extern void pa_cvolume_dec ([In, Out]Volume vol, UInt32 amount);
     }
 }
