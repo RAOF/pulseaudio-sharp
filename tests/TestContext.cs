@@ -306,12 +306,12 @@ namespace Pulseaudio
             Context c = new Context ();
             c.ConnectAndWait ();
             string name = "Unassigned value";
-            using (Operation o = c.GetSinkInfoByIndex (1,
+            using (Operation o = c.GetSinkInfoByIndex (0,
                                                        (SinkInfo info, int eol) => {if (eol ==0) {name = info.Name;}})) {
                 o.Wait ();
             }
             
-            Assert.AreEqual ("rtp", name);
+            Assert.IsTrue (name.Contains ("alsa"));
         }
     }
 }
