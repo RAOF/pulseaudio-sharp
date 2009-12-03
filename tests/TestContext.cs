@@ -1,21 +1,21 @@
-//  
+//
 //  Copyright © 2009 Christopher James Halse Rogers <raof@ubuntu.com>
-// 
+//
 //  TestContext.cs is a part of Pulseaudio#
-// 
+//
 //  Pulseaudio# is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
-// 
+//
 //  Pulseaudio# is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU Lesser General Public License for more details.
-// 
+//
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with Pulseaudio#.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 
 using System;
 using System.Linq;
@@ -65,7 +65,7 @@ namespace Pulseaudio
                 }
             }
         }
-        
+
         [Test()]
         public void TestGetServerVersion()
         {
@@ -87,7 +87,7 @@ namespace Pulseaudio
                 connection_finished.Set ();
             };
             RunUntilEventSignal (s.Connect, connection_finished, "Timeout waiting for Connect");
-            Assert.AreEqual (16, s.ServerAPI);            
+            Assert.AreEqual (16, s.ServerAPI);
         }
 
         [Test()]
@@ -111,7 +111,7 @@ namespace Pulseaudio
             c.Connecting += delegate { flag = true; };
             c.Connect ();
             MainLoopIterate ();
-            Assert.IsTrue (flag);            
+            Assert.IsTrue (flag);
         }
 
         [Test()]
@@ -310,7 +310,7 @@ namespace Pulseaudio
                                                        (SinkInfo info, int eol) => {if (eol ==0) {name = info.Name;}})) {
                 o.Wait ();
             }
-            
+
             Assert.IsTrue (name.Contains ("alsa"));
         }
     }
