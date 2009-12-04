@@ -204,6 +204,23 @@ namespace Pulseaudio
                                                                     pa_sink_info_cb cb,
                                                                     IntPtr userdata);
 
+        public delegate void ServerInfoCallback (ServerInfo info);
+        private delegate void pa_server_info_cb (IntPtr context, NativeServerInfo info, IntPtr userdata);
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_get_server_info (HandleRef context,
+                                                                 pa_server_info_cb cb,
+                                                                 IntPtr userdata);
+        public Operation GetServerInfo (ServerInfoCallback cb)
+        {
+            pa_server_info_cb wrappedCallback = (_, info, __) => { cb (new ServerInfo (info)); };
+            Operation opn;
+            try {
+                opn = new Operation (pa_context_get_server_info (context, wrappedCallback, IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error getting server info: {0}", LastError.Message));
+            }
+            return opn;
+        }
 
 
         private EventHandler<RawSinkEventArgs> _rawSinkEventHandler;

@@ -22,6 +22,7 @@ PulseAudio_DLL_SOURCES = 	src/AssemblyInfo.cs \
 				src/Operation.cs \
 				src/PropList.cs \
 				src/Sample.cs \
+				src/ServerInfo.cs \
 				src/Sink.cs \
 				src/SinkInput.cs \
 				src/Util.cs \

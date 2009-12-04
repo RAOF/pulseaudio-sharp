@@ -305,13 +305,49 @@ namespace Pulseaudio
         {
             Context c = new Context ();
             c.ConnectAndWait ();
-            string name = "Unassigned value";
+            ManualResetEvent callbackCalled = new ManualResetEvent (false);
             using (Operation o = c.GetSinkInfoByIndex (0,
-                                                       (SinkInfo info, int eol) => {if (eol ==0) {name = info.Name;}})) {
+                                                       (_, __) => callbackCalled.Set ())) {
                 o.Wait ();
             }
 
-            Assert.IsTrue (name.Contains ("alsa"));
+            Assert.IsTrue (callbackCalled.WaitOne (0));
+        }
+
+        [Test()]
+        public void GetServerInfoReturns ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            ManualResetEvent callbackCalled = new ManualResetEvent (false);
+            using (Operation o = c.GetServerInfo ((ServerInfo info) => {callbackCalled.Set ();})) {
+                o.Wait ();
+            }
+            Assert.IsTrue (callbackCalled.WaitOne (0));
+        }
+
+        [Test()]
+        public void ServerNameIsPulseaudio ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            ServerInfo info = new ServerInfo (new NativeServerInfo ());
+            using (Operation o = c.GetServerInfo ((ServerInfo i) => info = i)) {
+                o.Wait ();
+            }
+            Assert.AreEqual ("pulseaudio", info.Name);
+        }
+
+        [Test()]
+        public void DefaultChannelFormatIsStereo ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            ServerInfo info = new ServerInfo (new NativeServerInfo ());
+            using (Operation o = c.GetServerInfo ((ServerInfo i) => info = i)) {
+                o.Wait ();
+            }
+            Assert.AreEqual (ChannelMap.StereoMapping ().channels, info.DefaultChannelMap.channels);
         }
     }
 }
