@@ -7,6 +7,7 @@ AC_INIT([[PulseAudio#]],
 	[pulseaudio-sharp],
 	[https://launchpad.net/pulseaudio-sharp])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/Context.cs])
 
 AM_INIT_AUTOMAKE([foreign tar-pax dist-lzma 1.11])
