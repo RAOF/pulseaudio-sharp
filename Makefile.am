@@ -4,11 +4,12 @@ CSC_V = $(CSC_V_$(V))
 CSC_V_ = $(CSC_V_$(AM_DEFAULT_VERBOSITY))
 CSC_V_0 = @echo [CSC] $@;
 
-%.exe : $(%_EXE_SOURCES) $(%_EXE_RESOURCES)
+.SECONDEXPANSION:
+%.exe : $$($$*_EXE_SOURCES) $$($$*_EXE_RESOURCES)
 	$(CSC_V)$(CSC) $(CSCFLAGS) $($*_EXE_CSCFLAGS) -target:exe \
 		-out:$@ $($*_EXE_SOURCES) $($*_EXE_RESOURCES)
 
-%.dll : $(%_DLL_SOURCES) $(%_DLL_RESOURCES)
+%.dll : $$($$*_DLL_SOURCES) $$($$*_DLL_RESOURCES)
 	$(CSC_V)$(CSC) $(CSCFLAGS) $($*_DLL_CSCFLAGS) \
 		-target:library \
 		-out:$@ $($*_DLL_SOURCES) $($*_DLL_RESOURCES)
