@@ -23,10 +23,10 @@ using System.Runtime.InteropServices;
 namespace Pulseaudio
 {
     [StructLayout (LayoutKind.Sequential)]
-    public class SinkInputInfo
+    internal class NativeSinkInputInfo
     {
         public UInt32 index;                        /**< Index of the sink input */
-        public string name;                         /**< Name of the sink input */
+        public IntPtr name;                         /**< Name of the sink input */
         public UInt32 owner_module;                 /**< Index of the module this sink input belongs to, or PA_INVALID_INDEX when it does not belong to any module */
         public UInt32 client;                       /**< Index of the client this sink input belongs to, or PA_INVALID_INDEX when it does not belong to any client */
         public UInt32 sink;                         /**< Index of the connected sink */
@@ -35,18 +35,72 @@ namespace Pulseaudio
         public Volume volume;                       /**< The volume of this sink input */
         public UInt64 buffer_usec;                  /**< Latency due to buffering in sink input, see pa_latency_info for details */
         public UInt64 sink_usec;                    /**< Latency of the sink device, see pa_latency_info for details */
-        public string resample_method;              /**< The resampling method used by this sink input. */
-        public string driver;                       /**< Driver name */
+        public IntPtr resample_method;              /**< The resampling method used by this sink input. */
+        public IntPtr driver;                       /**< Driver name */
         public int mute;                            /**< Stream muted \since 0.9.7 */
-        // The Pulseaudio API really, really wants this to be an opaque pointer.
-        // Wrap it as an opaque pointer, and provide a property exposing a properly wrapped
-        // PropList.
-        private IntPtr prop_handle;                 /**< Property list \since 0.9.11 */
+        public IntPtr prop_handle;                  /**< Property list \since 0.9.11 */
+    }
 
-        public PropList proplist {
-            get {
-                return new PropList (prop_handle);
-            }
+    public class SinkInputInfo
+    {
+        private NativeSinkInputInfo info;
+
+        internal SinkInputInfo (NativeSinkInputInfo info)
+        {
+            this.info = info;
+            Name = Marshal.PtrToStringAnsi (info.name);
+            ResampleMethod = Marshal.PtrToStringAnsi (info.resample_method);
+            Driver = Marshal.PtrToStringAnsi (info.driver);
+        }
+
+        public string Name {
+            get;
+            private set;
+        }
+
+        public string ResampleMethod {
+            get;
+            private set;
+        }
+
+        public string Driver {
+            get;
+            private set;
+        }
+
+        public UInt32 Index {
+            get { return info.index; }
+        }
+        public UInt32 OwnerModule {
+            get { return info.owner_module; }
+        }
+        public UInt32 Client {
+            get { return info.client; }
+        }
+        public UInt32 Sink {
+            get { return info.sink; }
+        }
+        public SampleSpec Spec {
+            get { return info.sample_spec; }
+        }
+        public ChannelMap Map {
+            get { return info.channel_map; }
+        }
+        public Volume Vol {
+            get { return info.volume; }
+        }
+        public UInt64 BufferLatency {
+            get { return info.buffer_usec; }
+        }
+        public UInt64 SinkLatency {
+            get { return info.sink_usec; }
+        }
+        public int Mute {
+            get { return info.mute; }
+        }
+        public PropList Properties {
+            get;
+            private set;
         }
     }
 }

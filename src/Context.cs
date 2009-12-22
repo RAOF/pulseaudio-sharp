@@ -113,15 +113,19 @@ namespace Pulseaudio
 
         public void EnumerateSinkInputs (SinkInputInfoCallback cb)
         {
-            var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, SinkInputInfo info, int eol, IntPtr userdata) =>
-                                                        {
-                cb (info, eol);
+            var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) =>
+            {
+                if (eol == 0) {
+                    cb (new SinkInputInfo (info), eol);
+                } else {
+                    cb (null, eol);
+                }
             });
             pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero);
         }
 
         public delegate void SinkInputInfoCallback (SinkInputInfo info, int eol);
-        private delegate void pa_sink_input_info_cb (IntPtr context, SinkInputInfo info, int eol, IntPtr userdata);
+        private delegate void pa_sink_input_info_cb (IntPtr context, NativeSinkInputInfo info, int eol, IntPtr userdata);
 
         internal Operation EnumerateSinks (SinkInfoCallback cb)
         {
