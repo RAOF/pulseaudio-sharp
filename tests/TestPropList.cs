@@ -63,6 +63,32 @@ namespace Pulseaudio
         }
 
         [Test]
+        public void AddMultipleEntriesAndCheckForMemoryCorruption ()
+        {
+            PropList l = new PropList ();
+            System.Text.UTF8Encoding encoder = new System.Text.UTF8Encoding ();
+            string first = "mydata";
+            byte[] second = {
+                0,
+                5,
+                10,
+                25
+            };
+            byte[] third = {
+                255,
+                125,
+                5
+            };
+            l["first"] = encoder.GetBytes (first);
+            l["second"] = second;
+            l["third"] = third;
+
+            Assert.AreEqual (third, l["third"]);
+            Assert.AreEqual (second, l["second"]);
+            Assert.AreEqual (first, encoder.GetString (l["first"]));
+        }
+
+        [Test]
         public void AddStandardEntry ()
         {
             PropList l = new PropList ();
