@@ -42,6 +42,13 @@ namespace Pulseaudio
             handle = new HandleRef (this, listPtr);
         }
 
+        public string this[string key]
+        {
+            set {
+                pa_proplist_sets (handle, key, value);
+            }
+        }
+
         public bool Empty {
             get {
                 // TODO: Work out why pa_proplist_isempty doesn't return 0 when the list is empty.
@@ -68,5 +75,7 @@ namespace Pulseaudio
         private static extern void pa_proplist_clear (HandleRef list);
         [DllImport ("pulse")]
         private static extern uint pa_proplist_size (HandleRef list);
+        [DllImport ("pulse")]
+        private static extern int pa_proplist_sets (HandleRef list, string key, string value);
     }
 }

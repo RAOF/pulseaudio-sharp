@@ -38,5 +38,13 @@ namespace Pulseaudio
             PropList l = new PropList ();
             Assert.AreEqual (0, l.Count);
         }
+
+        [Test]
+        public void AddingEntryIncreasesCount ()
+        {
+            PropList l = new PropList ();
+            l["key"] = "value";
+            Assert.AreEqual (1, l.Count);
+        }
     }
 }
