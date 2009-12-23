@@ -46,5 +46,21 @@ namespace Pulseaudio
             l["key"] = "value";
             Assert.AreEqual (1, l.Count);
         }
+
+        [Test]
+        public void AddedEntryHasCorrectValue ()
+        {
+            PropList l = new PropList ();
+            l["key"] = "value";
+            Assert.AreEqual ("value", l["key"]);
+        }
+
+        [Test]
+        public void AddStandardEntry ()
+        {
+            PropList l = new PropList ();
+            l[Properties.ApplicationPID] = "1234";
+            Assert.AreEqual ("1234", l[Properties.ApplicationPID]);
+        }
     }
 }
