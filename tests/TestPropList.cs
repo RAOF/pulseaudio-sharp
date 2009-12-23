@@ -43,16 +43,23 @@ namespace Pulseaudio
         public void AddingEntryIncreasesCount ()
         {
             PropList l = new PropList ();
-            l["key"] = "value";
+            l[Properties.ApplicationIconName] = "value";
             Assert.AreEqual (1, l.Count);
         }
 
         [Test]
-        public void AddedEntryHasCorrectValue ()
+        public void AddedNonStandardEntryHasCorrectValue ()
         {
             PropList l = new PropList ();
-            l["key"] = "value";
-            Assert.AreEqual ("value", l["key"]);
+            byte[] data = {
+                0,
+                1,
+                2,
+                3,
+                4
+            };
+            l["key"] = data;
+            Assert.AreEqual (data, l["key"]);
         }
 
         [Test]

@@ -381,13 +381,23 @@ namespace Pulseaudio
             handle = new HandleRef (this, listPtr);
         }
 
-        public string this[string key]
+        public byte[] this[string key]
         {
             get {
-                return Marshal.PtrToStringAnsi (pa_proplist_gets (handle, key));
+                IntPtr data = new IntPtr ();
+                IntPtr size = new IntPtr ();
+                pa_proplist_get (handle, key, ref data, ref size);
+
+                byte[] retVal = new byte[size.ToInt32 ()];
+                Marshal.Copy (data, retVal, 0, size.ToInt32 ());
+
+                return retVal;
             }
             set {
-                pa_proplist_sets (handle, key, value);
+                if (value == null) {
+                    throw new ArgumentNullException ("value", "Setting a PropList key to 'null' is unsupported");
+                }
+                pa_proplist_set (handle, key, value, new IntPtr (Marshal.SizeOf (value[0]) * value.Length));
             }
         }
 
@@ -430,6 +440,10 @@ namespace Pulseaudio
         [DllImport ("pulse")]
         private static extern int pa_proplist_sets (HandleRef list, string key, string value);
         [DllImport ("pulse")]
+        private static extern int pa_proplist_set (HandleRef list, string key, byte[] data, IntPtr size);
+        [DllImport ("pulse")]
         private static extern IntPtr pa_proplist_gets (HandleRef list, string key);
+        [DllImport ("pulse")]
+        private static extern int pa_proplist_get (HandleRef list, string key, ref IntPtr data, ref IntPtr size);
     }
 }
