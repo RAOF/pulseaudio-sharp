@@ -67,7 +67,7 @@ namespace Pulseaudio
         /// <summary>
         /// For event sound streams: XDG event sound name. e.g. "message-new-email" (Event sound streams are those with media.role set to "event")
         /// </summary>
-        EventId,
+        EventID,
         /// <summary>
         /// For event sound streams: localized human readable one-line description of the event, formatted as UTF-8. e.g. "Email from lennart@example.com received."
         /// </summary>
@@ -296,6 +296,73 @@ namespace Pulseaudio
 
     public class PropList
     {
+        private static readonly Dictionary<Properties, string> propertyTable = new Dictionary<Properties, string> {
+            {Properties.MediaName, "media.name"},
+            {Properties.MediaTitle, "media.title"},
+            {Properties.MediaArtist, "media.artist"},
+            {Properties.MediaCopyright, "media.copyright"},
+            {Properties.MediaSoftware, "media.software"},
+            {Properties.MediaLanguage, "media.language"},
+            {Properties.MediaFilename, "media.filename"},
+            {Properties.MediaIconName, "media.icon_name"},
+            {Properties.MediaRole, "media.role"},
+            {Properties.EventID, "event.id"},
+            {Properties.EventDescription, "event.description"},
+            {Properties.EventMouseX, "event.mouse.x"},
+            {Properties.EventMouseY, "event.mouse.y"},
+            {Properties.EventMouseHPos, "event.mouse.hpos"},
+            {Properties.EventMouseVPos, "event.mouse.vpos"},
+            {Properties.EventMouseButton, "event.mouse.button"},
+            {Properties.WindowName, "window.name"},
+            {Properties.WindowID, "window.id"},
+            {Properties.WindowIconName, "window.icon_name"},
+            {Properties.WindowX, "window.x"},
+            {Properties.WindowY, "window.y"},
+            {Properties.WindowWidth, "window.width"},
+            {Properties.WindowHeight, "window.height"},
+            {Properties.WindowHPos, "window.hpos"},
+            {Properties.WindowVPos, "window.vpos"},
+            {Properties.WindowDesktop, "window.desktop"},
+            {Properties.WindowX11Display, "window.x11.display"},
+            {Properties.WindowX11Screen, "window.x11.screen"},
+            {Properties.WindowX11Monitor, "window.x11.monitor"},
+            {Properties.WindowX11XID, "window.x11.xid"},
+            {Properties.ApplicationName, "application.name"},
+            {Properties.ApplicationID, "application.id"},
+            {Properties.ApplicationVersion, "application.version"},
+            {Properties.ApplicationIconName, "application.icon_name"},
+            {Properties.ApplicationLanguage, "application.language"},
+            {Properties.ApplicationPID, "application.process.id"},
+            {Properties.ApplicationProcessBinary, "application.process.binary"},
+            {Properties.ApplicationProcessUser, "application.process.user"},
+            {Properties.ApplicationProcessHost, "application.process.host"},
+            {Properties.ApplicationProcessMachineID, "application.process.machine_id"},
+            {Properties.ApplicationProcessSessionID, "application.process.session_id"},
+            {Properties.DeviceString, "device.string"},
+            {Properties.DeviceAPI, "device.api"},
+            {Properties.DeviceDescription, "device.description"},
+            {Properties.DeviceBusPath, "device.bus_path"},
+            {Properties.DeviceSerial, "device.serial"},
+            {Properties.DeviceVendorID, "device.vendor.id"},
+            {Properties.DeviceVendorName, "device.vendor.name"},
+            {Properties.DeviceProductID, "device.product.id"},
+            {Properties.DeviceProductName, "device.product.name"},
+            {Properties.DeviceClass, "device.class"},
+            {Properties.DeviceFormFactor, "device.form_factor"},
+            {Properties.DeviceBus, "device.bus"},
+            {Properties.DeviceIconName, "device.icon_name"},
+            {Properties.DeviceAccessMode, "device.access_mode"},
+            {Properties.DeviceMasterDevice, "device.master_device"},
+            {Properties.DeviceBufferSize, "device.buffering.buffer_size"},
+            {Properties.DeviceFragmentSize, "device.buffering.fragment_size"},
+            {Properties.DeviceProfileName, "device.profile.name"},
+            {Properties.DeviceProfileDescription, "device.profile.description"},
+            {Properties.DeviceIntendedRoles, "device.intended_roles"},
+            {Properties.ModuleAuthor, "module.author"},
+            {Properties.ModuleDescription, "module.description"},
+            {Properties.ModuleUsage, "module.version"},
+            {Properties.ModuleVersion, "module.version"}
+        };
         private HandleRef handle;
         public PropList ()
         {
@@ -327,10 +394,10 @@ namespace Pulseaudio
         public string this[Properties prop]
         {
             get {
-                return Marshal.PtrToStringAnsi (pa_proplist_gets (handle, "id"));
+                return Marshal.PtrToStringAnsi (pa_proplist_gets (handle, propertyTable[prop]));
             }
             set {
-                pa_proplist_sets (handle, "id", value);
+                pa_proplist_sets (handle, propertyTable[prop], value);
             }
         }
 
