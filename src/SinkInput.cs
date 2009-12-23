@@ -41,11 +41,11 @@ namespace Pulseaudio
         public IntPtr prop_handle;                  /**< Property list \since 0.9.11 */
     }
 
-    public class SinkInputInfo
+    public class SinkInput
     {
         private NativeSinkInputInfo info;
 
-        internal SinkInputInfo (NativeSinkInputInfo info)
+        internal SinkInput (NativeSinkInputInfo info)
         {
             this.info = info;
             Name = Marshal.PtrToStringAnsi (info.name);

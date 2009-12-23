@@ -111,12 +111,12 @@ namespace Pulseaudio
         [DllImport ("pulse")]
         private static extern Error.Code pa_context_errno (HandleRef context);
 
-        public void EnumerateSinkInputs (SinkInputInfoCallback cb)
+        public void EnumerateSinkInputs (SinkInputCallback cb)
         {
             var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) =>
             {
                 if (eol == 0) {
-                    cb (new SinkInputInfo (info), eol);
+                    cb (new SinkInput (info), eol);
                 } else {
                     cb (null, eol);
                 }
@@ -124,7 +124,7 @@ namespace Pulseaudio
             pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero);
         }
 
-        public delegate void SinkInputInfoCallback (SinkInputInfo info, int eol);
+        public delegate void SinkInputCallback (SinkInput info, int eol);
         private delegate void pa_sink_input_info_cb (IntPtr context, NativeSinkInputInfo info, int eol, IntPtr userdata);
 
         internal Operation EnumerateSinks (SinkInfoCallback cb)
