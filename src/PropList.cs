@@ -25,7 +25,7 @@ namespace Pulseaudio
     public class PropList
     {
         private HandleRef handle;
-        public PropList()
+        public PropList ()
         {
             IntPtr listPtr = pa_proplist_new ();
             if (listPtr == IntPtr.Zero) {
