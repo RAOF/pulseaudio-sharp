@@ -429,6 +429,19 @@ namespace Pulseaudio
             pa_proplist_clear (handle);
         }
 
+        public IEnumerable<string> Keys {
+            get {
+                IntPtr cookie = new IntPtr (0);
+                IntPtr key;
+                key = pa_proplist_iterate (handle, ref cookie);
+                while (key != IntPtr.Zero) {
+                    yield return Marshal.PtrToStringAnsi (key);
+                    key = pa_proplist_iterate (handle, ref cookie);
+                }
+                yield break;
+            }
+        }
+
         [DllImport ("pulse")]
         private static extern int pa_proplist_isempty (HandleRef list);
         [DllImport ("pulse")]
@@ -445,5 +458,7 @@ namespace Pulseaudio
         private static extern IntPtr pa_proplist_gets (HandleRef list, string key);
         [DllImport ("pulse")]
         private static extern int pa_proplist_get (HandleRef list, string key, ref IntPtr data, ref IntPtr size);
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_proplist_iterate (HandleRef list, ref IntPtr cookie);
     }
 }

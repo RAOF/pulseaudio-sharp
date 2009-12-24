@@ -18,6 +18,8 @@
 //
 
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Pulseaudio
@@ -94,6 +96,36 @@ namespace Pulseaudio
             PropList l = new PropList ();
             l[Properties.ApplicationPID] = "1234";
             Assert.AreEqual ("1234", l[Properties.ApplicationPID]);
+        }
+
+        [Test]
+        public void AddedEntryAppearsInKeysEnumeration ()
+        {
+            PropList l = new PropList ();
+            l["foo"] = new byte[] {
+                1,
+                2,
+                3
+            };
+            Assert.Contains ("foo", l.Keys.ToArray ());
+        }
+
+        [Test]
+        public void EachAddedEntryAppearsInKeysEnumeration ()
+        {
+            PropList l = new PropList ();
+            string[] keys = new string[] {
+                "one",
+                "two",
+                "three",
+                "four"
+            };
+            foreach (string key in keys) {
+                l[key] = new byte[] { 1 };
+            }
+            foreach (string key in keys) {
+                Assert.Contains (key, l.Keys.ToArray ());
+            }
         }
     }
 }
