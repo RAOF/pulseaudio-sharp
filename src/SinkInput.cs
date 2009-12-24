@@ -43,10 +43,12 @@ namespace Pulseaudio
 
     public class SinkInput
     {
+        private Context ctx;
         private NativeSinkInputInfo info;
 
-        internal SinkInput (NativeSinkInputInfo info)
+        internal SinkInput (NativeSinkInputInfo info, Context c)
         {
+            ctx = c;
             this.info = info;
             Name = Marshal.PtrToStringAnsi (info.name);
             ResampleMethod = Marshal.PtrToStringAnsi (info.resample_method);

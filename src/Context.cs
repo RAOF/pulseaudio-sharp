@@ -116,7 +116,7 @@ namespace Pulseaudio
             var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) =>
             {
                 if (eol == 0) {
-                    cb (new SinkInput (info), eol);
+                    cb (new SinkInput (info, this), eol);
                 } else {
                     cb (null, eol);
                 }
