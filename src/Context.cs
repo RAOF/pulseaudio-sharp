@@ -111,7 +111,7 @@ namespace Pulseaudio
         [DllImport ("pulse")]
         private static extern Error.Code pa_context_errno (HandleRef context);
 
-        public void EnumerateSinkInputs (SinkInputCallback cb)
+        public Operation EnumerateSinkInputs (SinkInputCallback cb)
         {
             var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) =>
             {
@@ -121,7 +121,7 @@ namespace Pulseaudio
                     cb (null, eol);
                 }
             });
-            pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero);
+            return new Operation (pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero));
         }
 
         public delegate void SinkInputCallback (SinkInput info, int eol);
@@ -177,10 +177,27 @@ namespace Pulseaudio
                 throw new Exception (String.Format ("Error setting sink volume: {0}", LastError.Message));
             }
         }
-
-
         [DllImport("pulse")]
         private static extern IntPtr pa_context_set_sink_volume_by_index(HandleRef context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+
+        public Operation SetSinkInputVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
+        {
+            var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => {
+                cb (success);
+            });
+            try {
+                return new Operation (pa_context_set_sink_input_volume (context,
+                        index,
+                        vol,
+                        wrapped_cb,
+                        IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error setting sink input volume: {0}", LastError.Message));
+            }
+        }
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_set_sink_input_volume (HandleRef context, UInt32 index, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+
 
         public delegate void OperationSuccessCallback (int success);
         private delegate void pa_context_success_cb (IntPtr context, int success, IntPtr userdata);

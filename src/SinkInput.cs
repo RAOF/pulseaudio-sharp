@@ -104,5 +104,10 @@ namespace Pulseaudio
             get;
             private set;
         }
+
+        public Operation SetVolume (Volume v, Context.OperationSuccessCallback cb)
+        {
+            return ctx.SetSinkInputVolume (Index, v, cb);
+        }
     }
 }
