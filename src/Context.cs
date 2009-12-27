@@ -199,6 +199,22 @@ namespace Pulseaudio
         private static extern IntPtr pa_context_set_sink_input_volume (HandleRef context, UInt32 index, Volume vol, pa_context_success_cb cb, IntPtr userdata);
 
 
+        public Operation MoveSinkInputByIndex (UInt32 sinkInputIndex, UInt32 sinkIndex, OperationSuccessCallback cb)
+        {
+            var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => cb (success));
+            try {
+                return new Operation (pa_context_move_sink_input_by_index (context,
+                        sinkInputIndex,
+                        sinkIndex,
+                        wrapped_cb,
+                        IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error moving SinkInput {0} to sink {1}: {2}", sinkInputIndex, sinkIndex, LastError.Message));
+            }
+        }
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_move_sink_input_by_index (HandleRef context, UInt32 sinkInputIndex, UInt32 sinkIndex, pa_context_success_cb cb, IntPtr userdata);
+
         public delegate void OperationSuccessCallback (int success);
         private delegate void pa_context_success_cb (IntPtr context, int success, IntPtr userdata);
 
