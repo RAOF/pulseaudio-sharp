@@ -39,6 +39,7 @@ Test_DLL_SRC = 	tests/TestChannel.cs \
 		tests/TestPropList.cs \
 		tests/TestSample.cs \
 		tests/TestSink.cs \
+		tests/TestSinkInput.cs \
 		tests/TestUtil.cs \
 		tests/TestVolume.cs
 Test_DLL_CSCFLAGS = -pkg:nunit -pkg:glib-sharp-2.0 -r:PulseAudio.dll
