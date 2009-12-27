@@ -24,12 +24,25 @@ using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
 using Pulseaudio.GLib;
+using g = GLib;
 
 namespace Pulseaudio
 {
     [TestFixture]
     public class TestSinkInput
     {
+        private g.Process aplay;
+        [SetUp]
+        public void SetUp ()
+        {
+            g.Process.SpawnAsync (null, new string[] {"/usr/bin/aplay", "tests/15seconds.wav"}, null, g.SpawnFlags.StdoutToDevNull | g.SpawnFlags.StderrToDevNull, null, out aplay);
+            System.Threading.Thread.Sleep (200);
+        }
+        [TearDown]
+        public void TearDown ()
+        {
+            aplay.Close ();
+        }
         /*
          * This test requires an active SinkInput; ie: something needs to be playing sound
         */
