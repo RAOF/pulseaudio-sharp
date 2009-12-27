@@ -46,4 +46,7 @@ Test_DLL_CSCFLAGS = -pkg:nunit -pkg:glib-sharp-2.0 -r:PulseAudio.dll
 TESTS_ENVIRONMENT = nunit-console
 TESTS = Test.dll
 
-CLEANFILES=$(wildcard *.dll)
+CLEANFILES=$(wildcard *.dll) pulseaudio-sharp.pc
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = pulseaudio-sharp.pc
