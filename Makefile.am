@@ -7,12 +7,16 @@ CSC_V_0 = @echo [CSC] $@;
 .SECONDEXPANSION:
 %.exe : $$($$*_EXE_SRC) $$($$*_EXE_RESOURCES)
 	$(CSC_V)$(CSC) $(CSCFLAGS) $($*_EXE_CSCFLAGS) -target:exe \
-		-out:$@ $($*_EXE_SRC) $($*_EXE_RESOURCES)
+		-out:$@ \
+		$(addprefix $(srcdir)/, $($*_EXE_SRC))
+		$(addprefix $(srcdir)/, $($*_EXE_RESOURCES))
 
 %.dll : $$($$*_DLL_SRC) $$($$*_DLL_RESOURCES)
 	$(CSC_V)$(CSC) $(CSCFLAGS) $($*_DLL_CSCFLAGS) \
 		-target:library \
-		-out:$@ $($*_DLL_SRC) $($*_DLL_RESOURCES)
+		-out:$@ \
+		$(addprefix $(srcdir)/, $($*_DLL_SRC)) \
+		$(addprefix $(srcdir)/, $($*_DLL_RESOURCES))
 
 pkglib_DATA = PulseAudio.dll
 PulseAudio_DLL_SRC = 	src/AssemblyInfo.cs \
@@ -46,7 +50,13 @@ Test_DLL_CSCFLAGS = -pkg:nunit -pkg:glib-sharp-2.0 -r:PulseAudio.dll
 TESTS_ENVIRONMENT = nunit-console
 TESTS = Test.dll
 
-CLEANFILES=$(wildcard *.dll) pulseaudio-sharp.pc
+CLEANFILES=$(pkglib_DATA) $(check_DATA) TestResult.xml
+DISTCLEANFILES=$(pkgconfig_DATA)
+EXTRA_DIST=$(Test_DLL_SRC) $(PulseAudio_DLL_SRC) pulseaudio-sharp.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pulseaudio-sharp.pc
+
+clean-local:
+	rm -rf %temp%
+	rm -rf test-results
