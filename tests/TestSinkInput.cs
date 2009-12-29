@@ -38,11 +38,13 @@ namespace Pulseaudio
             g.Process.SpawnAsync (null, new string[] {"/usr/bin/aplay", "tests/15seconds.wav"}, null, g.SpawnFlags.StdoutToDevNull | g.SpawnFlags.StderrToDevNull, null, out aplay);
             System.Threading.Thread.Sleep (200);
         }
+
         [TearDown]
         public void TearDown ()
         {
             aplay.Close ();
         }
+
         /*
          * This test requires an active SinkInput; ie: something needs to be playing sound
         */
@@ -63,7 +65,7 @@ namespace Pulseaudio
                 opn.Wait ();
             }
             sinkInputs[0].SetVolume (oldVol, (_) => {}).Dispose ();
-            Assert.IsTrue (cbCalled.WaitOne (9));
+            Assert.IsTrue (cbCalled.WaitOne (0));
         }
     }
 }
