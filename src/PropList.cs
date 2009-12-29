@@ -429,6 +429,11 @@ namespace Pulseaudio
             pa_proplist_clear (handle);
         }
 
+        public PropList Copy ()
+        {
+            return new PropList (pa_proplist_copy (handle));
+        }
+
         public IEnumerable<string> Keys {
             get {
                 IntPtr cookie = new IntPtr (0);
@@ -460,5 +465,7 @@ namespace Pulseaudio
         private static extern int pa_proplist_get (HandleRef list, string key, ref IntPtr data, ref IntPtr size);
         [DllImport ("pulse")]
         private static extern IntPtr pa_proplist_iterate (HandleRef list, ref IntPtr cookie);
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_proplist_copy (HandleRef list);
     }
 }

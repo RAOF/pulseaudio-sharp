@@ -20,6 +20,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
@@ -66,6 +67,19 @@ namespace Pulseaudio
             }
             sinkInputs[0].SetVolume (oldVol, (_) => {}).Dispose ();
             Assert.IsTrue (cbCalled.WaitOne (0));
+        }
+
+        [Test]
+        public void TestAplaySinkInputHasCorrectApplicationBinaryProperty ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            List<SinkInput> inputs = new List<SinkInput> ();
+            using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => inputs.Add (input))) {
+                opn.Wait ();
+            }
+            SinkInput aplayInput = inputs.FirstOrDefault ((SinkInput input) => input.Properties[Properties.ApplicationProcessBinary] == "aplay");
+            Assert.IsNotNull (aplayInput);
         }
     }
 }

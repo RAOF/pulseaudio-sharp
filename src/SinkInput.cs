@@ -53,6 +53,8 @@ namespace Pulseaudio
             Name = Marshal.PtrToStringAnsi (info.name);
             ResampleMethod = Marshal.PtrToStringAnsi (info.resample_method);
             Driver = Marshal.PtrToStringAnsi (info.driver);
+            PropList temp = new PropList (info.prop_handle);
+            Properties = temp.Copy ();
         }
 
         public string Name {
