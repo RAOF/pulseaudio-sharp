@@ -30,101 +30,109 @@ namespace Pulseaudio
         [Test()]
         public void NewlyCreatedPropListIsEmpty ()
         {
-            PropList l = new PropList ();
-            Assert.IsTrue (l.Empty);
+            using (PropList l = new PropList ()) {
+                Assert.IsTrue (l.Empty);
+            }
         }
 
         [Test()]
         public void NewlyCreatedPropListHasZeroEntries ()
         {
-            PropList l = new PropList ();
-            Assert.AreEqual (0, l.Count);
+            using (PropList l = new PropList ()) {
+                Assert.AreEqual (0, l.Count);
+            }
         }
 
         [Test]
         public void AddingEntryIncreasesCount ()
         {
-            PropList l = new PropList ();
-            l[Properties.ApplicationIconName] = "value";
-            Assert.AreEqual (1, l.Count);
+            using (PropList l = new PropList ()) {
+                l[Properties.ApplicationIconName] = "value";
+                Assert.AreEqual (1, l.Count);
+            }
         }
 
         [Test]
         public void AddedNonStandardEntryHasCorrectValue ()
         {
-            PropList l = new PropList ();
-            byte[] data = {
-                0,
-                1,
-                2,
-                3,
-                4
-            };
-            l["key"] = data;
-            Assert.AreEqual (data, l["key"]);
+            using (PropList l = new PropList ()) {
+                byte[] data = {
+                    0,
+                    1,
+                    2,
+                    3,
+                    4
+                };
+                l["key"] = data;
+                Assert.AreEqual (data, l["key"]);
+            }
         }
 
         [Test]
         public void AddMultipleEntriesAndCheckForMemoryCorruption ()
         {
-            PropList l = new PropList ();
-            System.Text.UTF8Encoding encoder = new System.Text.UTF8Encoding ();
-            string first = "mydata";
-            byte[] second = {
-                0,
-                5,
-                10,
-                25
-            };
-            byte[] third = {
-                255,
-                125,
-                5
-            };
-            l["first"] = encoder.GetBytes (first);
-            l["second"] = second;
-            l["third"] = third;
+            using (PropList l = new PropList ()) {
+                System.Text.UTF8Encoding encoder = new System.Text.UTF8Encoding ();
+                string first = "mydata";
+                byte[] second = {
+                    0,
+                    5,
+                    10,
+                    25
+                };
+                byte[] third = {
+                    255,
+                    125,
+                    5
+                };
+                l["first"] = encoder.GetBytes (first);
+                l["second"] = second;
+                l["third"] = third;
 
-            Assert.AreEqual (third, l["third"]);
-            Assert.AreEqual (second, l["second"]);
-            Assert.AreEqual (first, encoder.GetString (l["first"]));
+                Assert.AreEqual (third, l["third"]);
+                Assert.AreEqual (second, l["second"]);
+                Assert.AreEqual (first, encoder.GetString (l["first"]));
+            }
         }
 
         [Test]
         public void AddStandardEntry ()
         {
-            PropList l = new PropList ();
-            l[Properties.ApplicationPID] = "1234";
-            Assert.AreEqual ("1234", l[Properties.ApplicationPID]);
+            using (PropList l = new PropList ()) {
+                l[Properties.ApplicationPID] = "1234";
+                Assert.AreEqual ("1234", l[Properties.ApplicationPID]);
+            }
         }
 
         [Test]
         public void AddedEntryAppearsInKeysEnumeration ()
         {
-            PropList l = new PropList ();
-            l["foo"] = new byte[] {
-                1,
-                2,
-                3
-            };
-            Assert.Contains ("foo", l.Keys.ToArray ());
+            using (PropList l = new PropList ()) {
+                l["foo"] = new byte[] {
+                    1,
+                    2,
+                    3
+                };
+                Assert.Contains ("foo", l.Keys.ToArray ());
+            }
         }
 
         [Test]
         public void EachAddedEntryAppearsInKeysEnumeration ()
         {
-            PropList l = new PropList ();
-            string[] keys = new string[] {
-                "one",
-                "two",
-                "three",
-                "four"
-            };
-            foreach (string key in keys) {
-                l[key] = new byte[] { 1 };
-            }
-            foreach (string key in keys) {
-                Assert.Contains (key, l.Keys.ToArray ());
+            using (PropList l = new PropList ()) {
+                string[] keys = new string[] {
+                    "one",
+                    "two",
+                    "three",
+                    "four"
+                };
+                foreach (string key in keys) {
+                    l[key] = new byte[] { 1 };
+                }
+                foreach (string key in keys) {
+                    Assert.Contains (key, l.Keys.ToArray ());
+                }
             }
         }
     }
