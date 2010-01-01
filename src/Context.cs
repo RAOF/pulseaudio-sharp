@@ -21,6 +21,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Threading;
+using System.Reflection;
 
 namespace Pulseaudio
 {
@@ -36,8 +37,18 @@ namespace Pulseaudio
 
         public Context ()
         {
+            Init (Assembly.GetCallingAssembly ().GetName ().Name);
+        }
+
+        public Context (string clientName)
+        {
+            Init (clientName);
+        }
+
+        private void Init (string clientName)
+        {
             loop = new GLibMainLoop ();
-            context = new HandleRef (this, pa_context_new (loop.GetAPI (), "LibFoo"));
+            context = new HandleRef (this, pa_context_new (loop.GetAPI (), clientName));
             pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
         }
 
