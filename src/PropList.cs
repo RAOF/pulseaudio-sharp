@@ -294,7 +294,7 @@ namespace Pulseaudio
         ModuleVersion
     }
 
-    public class PropList
+    public class PropList : IDisposable
     {
         private static readonly Dictionary<Properties, string> propertyTable = new Dictionary<Properties, string> {
             {Properties.MediaName, "media.name"},
@@ -364,6 +364,8 @@ namespace Pulseaudio
             {Properties.ModuleVersion, "module.version"}
         };
         private HandleRef handle;
+        private bool needDispose;
+
         public PropList ()
         {
             IntPtr listPtr = pa_proplist_new ();
@@ -371,14 +373,44 @@ namespace Pulseaudio
                 throw new NullReferenceException ();
             }
             handle = new HandleRef (this, listPtr);
+            needDispose = true;
         }
 
+        /// <summary>
+        /// Internal-only PropList constructor taking an unmanaged pointer.
+        /// </summary>
+        /// <param name="listPtr">
+        /// A <see cref="IntPtr"/>.  Unmanaged pointer to a pa_proplist.
+        /// </param>
+        /// <remarks>
+        /// It is assumed that native code owns the pa_proplist pointer.  As such, it will not be free'd on Dispose ().
+        /// If the managed code should own this pointer, set needDispose to true after calling this constructor.
+        /// </remarks>
         internal PropList (IntPtr listPtr)
         {
             if (listPtr == IntPtr.Zero) {
                 throw new NullReferenceException ();
             }
             handle = new HandleRef (this, listPtr);
+            needDispose = false;
+        }
+
+        ~PropList ()
+        {
+            if (needDispose) {
+                pa_proplist_free (handle);
+            }
+        }
+
+        public void Dispose ()
+        {
+            if (needDispose) {
+                pa_proplist_free (handle);
+            }
+            handle = new HandleRef (this, IntPtr.Zero);
+            needDispose = false;
+
+            GC.SuppressFinalize (this);
         }
 
         public byte[] this[string key]
@@ -431,7 +463,9 @@ namespace Pulseaudio
 
         public PropList Copy ()
         {
-            return new PropList (pa_proplist_copy (handle));
+            PropList clone = new PropList (pa_proplist_copy (handle));
+            clone.needDispose = true;
+            return clone;
         }
 
         public IEnumerable<string> Keys {
@@ -467,5 +501,7 @@ namespace Pulseaudio
         private static extern IntPtr pa_proplist_iterate (HandleRef list, ref IntPtr cookie);
         [DllImport ("pulse")]
         private static extern IntPtr pa_proplist_copy (HandleRef list);
+        [DllImport ("pulse")]
+        private static extern void pa_proplist_free (HandleRef list);
     }
 }
