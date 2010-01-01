@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ItemType>PackagingProject</ItemType>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B589F07D-C05A-4F90-B4AF-9ADD98F49E33}</ProjectGuid>
+    <Packages>
+      <Packages>
+        <Package name="Tarball">
+          <Builder TargetDirectory="..\..\..\..\..\chris\Devel\Pulseaudio" DefaultConfiguration="Debug" ctype="TarballDeployTarget">
+            <ChildEntries>
+              <SolutionItemReference path="Pulseaudio.csproj" />
+            </ChildEntries>
+            <RootEntry path="Pulseaudio.sln" id="Pulseaudio" />
+          </Builder>
+        </Package>
+      </Packages>
+    </Packages>
+  </PropertyGroup>
+</Project>

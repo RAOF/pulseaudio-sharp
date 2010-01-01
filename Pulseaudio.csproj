@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A3B36B1-5C96-4A5E-9D89-32CBD1634EC0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Pulseaudio</AssemblyName>
+    <RootNamespace>Pulseaudio</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="nunit.core">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>nunit-2.4</Package>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>nunit-2.4</Package>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\AssemblyInfo.cs" />
+    <Compile Include="tests\TestContext.cs" />
+    <Compile Include="src\Context.cs" />
+    <Compile Include="src\MainLoop.cs" />
+    <Compile Include="tests\TestMainLoop.cs" />
+    <Compile Include="tests\TestVolume.cs" />
+    <Compile Include="src\Volume.cs" />
+    <Compile Include="src\Operation.cs" />
+    <Compile Include="src\Channel.cs" />
+    <Compile Include="tests\TestChannel.cs" />
+    <Compile Include="tests\TestSample.cs" />
+    <Compile Include="src\Sample.cs" />
+    <Compile Include="tests\TestPropList.cs" />
+    <Compile Include="src\PropList.cs" />
+    <Compile Include="src\Sink.cs" />
+    <Compile Include="src\SinkInput.cs" />
+    <Compile Include="src\GLib.cs" />
+    <Compile Include="tests\TestGLib.cs" />
+    <Compile Include="src\Util.cs" />
+    <Compile Include="tests\TestUtil.cs" />
+    <Compile Include="tests\TestSink.cs" />
+    <Compile Include="src\ServerInfo.cs" />
+    <Compile Include="tests\TestSinkInput.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="tests\" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties InternalTargetFrameworkVersion="3.5">
+        <Policies>
+          <DotNetNamingPolicy DirectoryNamespaceAssociation="None" ResourceNamePolicy="FileName" />
+          <StandardHeader inheritsSet="LGPLv3License" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <None Include="configure.ac" />
+    <None Include="Makefile.am" />
+  </ItemGroup>
+</Project>
