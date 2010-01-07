@@ -65,6 +65,7 @@
     <Compile Include="tests\TestSink.cs" />
     <Compile Include="src\ServerInfo.cs" />
     <Compile Include="tests\TestSinkInput.cs" />
+    <Compile Include="tests\Helper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
