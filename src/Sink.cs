@@ -120,7 +120,7 @@ namespace Pulseaudio
         }
     }
 
-    public class Sink {
+    public class Sink : IDisposable {
         private void UpdateFromInfo (SinkInfo i)
         {
             if (info.volume != i.volume) {
@@ -136,6 +136,7 @@ namespace Pulseaudio
             Description = i.Description;
         }
 
+        private bool disposed;
         private SinkInfo info;
         private Context context;
 
@@ -145,6 +146,27 @@ namespace Pulseaudio
             this.info = info;
             Name = info.Name;
             Description = info.Description;
+            disposed = false;
+        }
+
+        ~Sink ()
+        {
+            if (!disposed) {
+                FreeResources ();
+            }
+        }
+
+        public void Dispose ()
+        {
+            FreeResources ();
+            GC.SuppressFinalize (this);
+            disposed = true;
+        }
+
+        private void FreeResources ()
+        {
+            //Unregister our server info callbacks
+            context.RawSinkEvent -= HandleRawSinkEvent;
         }
 
         public string Name {

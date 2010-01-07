@@ -33,6 +33,18 @@ namespace Pulseaudio
     [TestFixture()]
     public class TestSink
     {
+        private Helper helper;
+        [SetUp]
+        public void SetUp ()
+        {
+            helper = new Helper ();
+        }
+
+        [TearDown]
+        public void TearDown ()
+        {
+            helper.Dispose ();
+        }
 
         private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
         {
@@ -92,6 +104,45 @@ namespace Pulseaudio
             using (Operation o = sinks[0].SetVolume (oldVol, (_) => {;})) {
                 o.Wait ();
             }
+        }
+
+        [Test]
+        public void DisposeUnhooksVolumeCallbacks ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            helper.AddSink ("dispose_test_sink");
+
+            var sinks = new List<Sink> ();
+            using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
+                o.Wait ();
+            }
+            Sink testSink = sinks.Where ((Sink s) => s.Name == "dispose_test_sink").First ();
+
+            testSink.VolumeChanged += delegate(object sender, Sink.VolumeChangedEventArgs e) {
+                Assert.Fail ("VolumeChanged callback run after Sink was disposed");
+            };
+
+            while (g::MainContext.Iteration (false)) {}
+            testSink.Dispose ();
+
+            // Find the sink again...
+            sinks.Clear ();
+            using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
+                o.Wait ();
+            }
+            testSink = sinks.Where ((Sink s) => s.Name == "dispose_test_sink").First ();
+            Volume vol = new Volume ();
+            using (Operation o = testSink.GetVolume (v => vol = v)) {
+                o.Wait ();
+            }
+            vol.Modify (0.5);
+            using (Operation o = testSink.SetVolume (vol, (o) => {;})) {
+                o.Wait ();
+            }
+            //Flush the mainloop
+            while (g::MainContext.Iteration (false)) {}
         }
     }
 }
