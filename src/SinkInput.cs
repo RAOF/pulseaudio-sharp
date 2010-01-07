@@ -41,8 +41,9 @@ namespace Pulseaudio
         public IntPtr prop_handle;                  /**< Property list \since 0.9.11 */
     }
 
-    public class SinkInput
+    public class SinkInput : IDisposable
     {
+        private bool disposed = false;
         private Context ctx;
         private NativeSinkInputInfo info;
 
@@ -55,6 +56,27 @@ namespace Pulseaudio
             Driver = Marshal.PtrToStringAnsi (info.driver);
             PropList temp = new PropList (info.prop_handle);
             Properties = temp.Copy ();
+        }
+
+        public void Dispose ()
+        {
+            Dispose (true);
+            GC.SuppressFinalize (this);
+        }
+
+        public void Dispose (bool explicitlyCalled)
+        {
+            if (!disposed) {
+                if (explicitlyCalled) {
+                    Properties.Dispose ();
+                }
+                disposed = true;
+            }
+        }
+
+        ~SinkInput ()
+        {
+            Dispose (false);
         }
 
         public string Name {
