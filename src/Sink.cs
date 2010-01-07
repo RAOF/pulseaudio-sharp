@@ -136,7 +136,7 @@ namespace Pulseaudio
             Description = i.Description;
         }
 
-        private bool disposed;
+        private bool disposed = false;
         private SinkInfo info;
         private Context context;
 
@@ -146,27 +146,26 @@ namespace Pulseaudio
             this.info = info;
             Name = info.Name;
             Description = info.Description;
-            disposed = false;
         }
 
         ~Sink ()
         {
-            if (!disposed) {
-                FreeResources ();
-            }
+            Dispose (false);
         }
 
         public void Dispose ()
         {
-            FreeResources ();
+            Dispose (true);
             GC.SuppressFinalize (this);
-            disposed = true;
         }
 
-        private void FreeResources ()
+        public void Dispose (bool explicitlyCalled)
         {
-            //Unregister our server info callbacks
-            context.RawSinkEvent -= HandleRawSinkEvent;
+            if (!disposed) {
+                //Unregister our server info callbacks
+                context.RawSinkEvent -= HandleRawSinkEvent;
+                disposed = true;
+            }
         }
 
         public string Name {
