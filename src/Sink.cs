@@ -148,22 +148,19 @@ namespace Pulseaudio
             Description = info.Description;
         }
 
-        ~Sink ()
-        {
-            Dispose (false);
-        }
-
         public void Dispose ()
         {
             Dispose (true);
             GC.SuppressFinalize (this);
         }
 
-        public void Dispose (bool explicitlyCalled)
+        protected virtual void Dispose (bool explicitlyCalled)
         {
             if (!disposed) {
-                //Unregister our server info callbacks
-                context.RawSinkEvent -= HandleRawSinkEvent;
+                if (explicitlyCalled) {
+                    //Unregister our server info callbacks
+                    context.RawSinkEvent -= HandleRawSinkEvent;
+                }
                 disposed = true;
             }
         }
