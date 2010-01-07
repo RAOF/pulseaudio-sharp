@@ -25,8 +25,9 @@ using System.Reflection;
 
 namespace Pulseaudio
 {
-    public class Context
+    public class Context : IDisposable
     {
+        private bool disposed = false;
         HandleRef context;
         MainLoop loop;
 
@@ -43,6 +44,32 @@ namespace Pulseaudio
         public Context (string clientName)
         {
             Init (clientName);
+        }
+
+        public void Dispose ()
+        {
+            Dispose (true);
+            GC.SuppressFinalize (this);
+        }
+
+        protected virtual void Dispose (bool explicitlyCalled)
+        {
+            if (!disposed) {
+                if (!explicitlyCalled) {
+                    //If we're being Finialised we need to unset the state callback.
+                    //Otherwise, PulseAudio will try to call this.ContextNotifyHandler to tell us that
+                    //we've disconnected, and unfriendlyness will occur.
+                    pa_context_set_state_callback (context, (_, __) => {;}, IntPtr.Zero);
+                }
+                pa_context_disconnect (context);
+                pa_context_unref (context);
+                disposed = true;
+            }
+        }
+
+        ~Context ()
+        {
+            Dispose (false);
         }
 
         private void Init (string clientName)
@@ -251,6 +278,10 @@ namespace Pulseaudio
         private static extern IntPtr pa_context_get_sink_info_list (HandleRef context,
                                                                     pa_sink_info_cb cb,
                                                                     IntPtr userdata);
+        [DllImport ("pulse")]
+        private static extern void pa_context_unref (HandleRef context);
+        [DllImport ("pulse")]
+        private static extern void pa_context_disconnect (HandleRef context);
 
         public delegate void ServerInfoCallback (ServerInfo info);
         private delegate void pa_server_info_cb (IntPtr context, NativeServerInfo info, IntPtr userdata);
