@@ -36,7 +36,8 @@ PulseAudio_DLL_SRC = 	src/AssemblyInfo.cs \
 PulseAudio_DLL_CSCFLAGS = $(GLIB_SHARP_20_LIBS)
 
 check_DATA = Test.dll
-Test_DLL_SRC = 	tests/TestChannel.cs \
+Test_DLL_SRC = 	tests/Helper.cs \
+		tests/TestChannel.cs \
 		tests/TestContext.cs \
 		tests/TestGLib.cs \
 		tests/TestMainLoop.cs \
