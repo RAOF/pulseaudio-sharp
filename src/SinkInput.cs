@@ -74,11 +74,6 @@ namespace Pulseaudio
             }
         }
 
-        ~SinkInput ()
-        {
-            Dispose (false);
-        }
-
         public string Name {
             get;
             private set;
