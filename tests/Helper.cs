@@ -69,7 +69,11 @@ namespace Pulseaudio
 
         public void SpawnAplaySinkInput ()
         {
-            processesSpawned.Add (Process.Start ("/usr/bin/aplay", "tests/15seconds.wav"));
+            ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", "tests/15seconds.wav");
+            p.RedirectStandardOutput = true;
+            p.RedirectStandardError = true;
+            p.UseShellExecute = false;
+            processesSpawned.Add (Process.Start (p));
             System.Threading.Thread.Sleep (50);
         }
 
