@@ -79,6 +79,8 @@ namespace Pulseaudio
         [Test()]
         public void TestVolumeChangedCallbackRuns ()
         {
+            string testSinkName = "VolumeChangeTestSink";
+            helper.AddSink (testSinkName);
             Context c = new Context ();
             c.ConnectAndWait ();
 
@@ -88,23 +90,19 @@ namespace Pulseaudio
             using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
                 o.Wait ();
             }
-            sinks[0].VolumeChanged += (_, __) => {
+            Sink volumeTestSink = sinks.First ((Sink s) => s.Name == testSinkName);
+            volumeTestSink.VolumeChanged += (_, __) => {
                 callbackTriggered.Set ();
             };
-            Volume oldVol = new Volume ();
-            Volume newVol;
-            using (Operation o = sinks[0].GetVolume ((Volume v) => oldVol = v)) {
+            Volume vol = new Volume ();
+            using (Operation o = volumeTestSink.GetVolume ((Volume v) => vol = v)) {
                 o.Wait ();
             }
-            newVol = oldVol.Copy ();
-            newVol.Set (0);
-            using (Operation o = sinks[0].SetVolume (newVol, (_) => {;})) {
+            vol.Modify (0.1);
+            using (Operation o = volumeTestSink.SetVolume (vol, (_) => {;})) {
                 o.Wait ();
             }
             RunUntilEventSignal (() => {;}, callbackTriggered, "Timeout waiting for VolumeChanged signal");
-            using (Operation o = sinks[0].SetVolume (oldVol, (_) => {;})) {
-                o.Wait ();
-            }
         }
 
         [Test]
