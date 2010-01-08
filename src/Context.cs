@@ -26,7 +26,7 @@ using System.Reflection;
 namespace Pulseaudio
 {
     public enum EventType {
-        New,
+        Added,
         Changed,
         Removed,
         Error
@@ -359,7 +359,7 @@ namespace Pulseaudio
                 action = EventType.Changed;
                 break;
             case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_NEW:
-                action = EventType.New;
+                action = EventType.Added;
                 break;
             case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_REMOVE:
                 action = EventType.Removed;
