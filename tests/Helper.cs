@@ -29,10 +29,12 @@ namespace Pulseaudio
     {
         private bool disposed = false;
         private List<int> modulesLoaded;
+        private List<Process> processesSpawned;
 
         public Helper ()
         {
             modulesLoaded = new List<int> ();
+            processesSpawned = new List<Process> ();
         }
 
         /// <summary>
@@ -65,10 +67,17 @@ namespace Pulseaudio
             AddSink (name, "Null sink, no description added");
         }
 
+        public void SpawnAplaySinkInput ()
+        {
+            processesSpawned.Add (Process.Start ("/usr/bin/aplay", "tests/15seconds.wav"));
+            System.Threading.Thread.Sleep (50);
+        }
+
         public void Dispose ()
         {
             if (!disposed) {
                 UnloadModules ();
+                KillProcesses ();
                 GC.SuppressFinalize (this);
 
                 modulesLoaded = null;
@@ -81,6 +90,13 @@ namespace Pulseaudio
             foreach (int moduleIndex in modulesLoaded) {
                 string cmdLineOpts = String.Format ("unload-module {0}", moduleIndex);
                 Process.Start ("/usr/bin/pactl", cmdLineOpts).WaitForExit ();
+            }
+        }
+
+        private void KillProcesses ()
+        {
+            foreach (Process p in processesSpawned) {
+                p.Kill ();
             }
         }
 
