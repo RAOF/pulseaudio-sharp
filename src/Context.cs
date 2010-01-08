@@ -25,6 +25,25 @@ using System.Reflection;
 
 namespace Pulseaudio
 {
+    public enum EventType {
+        New,
+        Changed,
+        Removed,
+        Error
+    }
+
+    public class ServerEventArgs : EventArgs
+    {
+        public ServerEventArgs (EventType t, UInt32 index)
+        {
+            this.Type = t;
+            this.index = index;
+        }
+        public EventType Type { get; private set; }
+        public UInt32 index { get; private set; }
+    }
+
+
     public class Context : IDisposable
     {
         private bool disposed = false;
@@ -332,6 +351,35 @@ namespace Pulseaudio
             }
         }
 
+        private EventHandler<ServerEventArgs> _sinkEventHandler;
+        public event EventHandler<ServerEventArgs> SinkEvent {
+            add {
+                lock (eventHandlerLock) {
+                    if (_sinkEventHandler == null) {
+                        pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
+                        Operation o = new Operation (pa_context_subscribe (context,
+                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_ALL,
+                                                                           (a, b, c) => {;},
+                                                                           IntPtr.Zero));
+                        o.Dispose ();
+                    }
+                    _sinkEventHandler += value;
+                }
+            }
+            remove {
+                lock (eventHandlerLock) {
+                    _sinkEventHandler -= value;
+                    if (_sinkEventHandler == null) {
+                        Operation o = new Operation (pa_context_subscribe (context,
+                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL,
+                                                                           (a,b,c) => {;},
+                                                                           IntPtr.Zero));
+                        o.Dispose ();
+                    }
+                }
+            }
+        }
+
         private void SubscriptionEventHandler (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata)
         {
             EventType action = EventType.Error;
@@ -347,12 +395,12 @@ namespace Pulseaudio
                 break;
             }
             if ((e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK) == 0x0000) {
-                EventHandler<RawSinkEventArgs> handler;
+                EventHandler<ServerEventArgs> handler;
                 lock (eventHandlerLock) {
-                    handler = _rawSinkEventHandler;
+                    handler = _sinkEventHandler;
                 }
                 if (handler != null) {
-                    handler (this, new RawSinkEventArgs { action = action, index = index });
+                    handler (this, new ServerEventArgs (action, index));
                 }
             }
         }
@@ -400,12 +448,6 @@ namespace Pulseaudio
             PA_SUBSCRIPTION_EVENT_CHANGE = 0x0010U,/**< A property of the object was modified */
             PA_SUBSCRIPTION_EVENT_REMOVE = 0x0020U,/**< An object was removed */
             PA_SUBSCRIPTION_EVENT_TYPE_MASK = 0x0030U/**< A mask to extract the event operation from an event value */
-        }
-        public enum EventType {
-            New,
-            Changed,
-            Removed,
-            Error
         }
         public class RawSinkEventArgs : EventArgs {
             public EventType action { get; set;}

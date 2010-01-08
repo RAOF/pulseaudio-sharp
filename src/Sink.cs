@@ -159,7 +159,7 @@ namespace Pulseaudio
             if (!disposed) {
                 if (explicitlyCalled) {
                     //Unregister our server info callbacks
-                    context.RawSinkEvent -= HandleRawSinkEvent;
+                    context.SinkEvent -= HandleRawSinkEvent;
                 }
                 disposed = true;
             }
@@ -195,7 +195,7 @@ namespace Pulseaudio
             add {
                 lock (eventHandlerLock) {
                     if (_volumeChangedHandler == null) {
-                        context.RawSinkEvent += HandleRawSinkEvent;
+                        context.SinkEvent += HandleRawSinkEvent;
                     }
                     _volumeChangedHandler += value;
                 }
@@ -204,16 +204,16 @@ namespace Pulseaudio
                 lock (eventHandlerLock) {
                     _volumeChangedHandler -= value;
                     if (_volumeChangedHandler == null) {
-                        context.RawSinkEvent -= HandleRawSinkEvent;
+                        context.SinkEvent -= HandleRawSinkEvent;
                     }
                 }
             }
         }
 
-        void HandleRawSinkEvent (object sender, Context.RawSinkEventArgs e)
+        void HandleRawSinkEvent (object sender, ServerEventArgs e)
         {
             Context c = sender as Context;
-            if (e.action == Context.EventType.Changed) {
+            if (e.Type == EventType.Changed) {
                 if (e.index == info.index) {
                     Operation o = c.GetSinkInfoByIndex (info.index, (SinkInfo i, int eol) =>
                     {

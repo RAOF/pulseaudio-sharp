@@ -357,5 +357,24 @@ namespace Pulseaudio
             }
             Assert.AreEqual (ChannelMap.StereoMapping ().channels, info.DefaultChannelMap.channels);
         }
+
+        [Test]
+        public void SinkAddedEventSignals ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            var eventTriggered = new ManualResetEvent (false);
+
+            c.SinkEvent += delegate(object sender, ServerEventArgs args) {
+                if (args.Type == EventType.Added) {
+                    eventTriggered.Set ();
+                }
+            };
+            MainLoopIterate ();
+
+            helper.AddSink ("Test sink");
+
+            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
+        }
     }
 }
