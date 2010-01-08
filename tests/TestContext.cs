@@ -34,6 +34,22 @@ namespace Pulseaudio
     [TestFixture()]
     public class TestContext
     {
+        private Helper helper;
+
+        [SetUp]
+        public void SetUp ()
+        {
+            helper = new Helper ();
+            helper.AddSink ("Default Test Sink 1");
+            helper.AddSink ("Default Test Sink 2");
+        }
+
+        [TearDown]
+        public void TearDown ()
+        {
+            helper.Dispose ();
+        }
+
         private void MainLoopIterate ()
         {
             while (g::MainContext.Iteration (false))
@@ -197,13 +213,10 @@ namespace Pulseaudio
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
-        /*
-         * This test assumes that the running pulseaudio daemon exports an RTP sender sink.
-         * It will fail otherwise
-         */
         [Test()]
-        public void SinkInfoContainsSinkNamedRTP ()
+        public void SinkInfoContainsKnownSink ()
         {
+            helper.AddSink ("TestName");
             var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context c = new Context ();
             List<string> sink_names = new List<string> ();
@@ -212,7 +225,7 @@ namespace Pulseaudio
                     if (eol == 0) {
                         sink_names.Add (info.Name);
                     } else {
-                        Assert.Contains ("rtp", sink_names);
+                        Assert.Contains ("TestName", sink_names);
                         callback_called.Set ();
                     }
                 });
@@ -220,14 +233,10 @@ namespace Pulseaudio
             RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
-        /*
-         * This test assumes that the running pulseaudio daemon has a sink with the description
-         * "Internal Audio Analog Stereo".
-         * It will fail otherwise
-         */
         [Test()]
-        public void SinkInfoContainsInternalAudioSink ()
+        public void SinkInfoContainsKnownDescription ()
         {
+            helper.AddSink ("Test Sink", "Test Description");
             var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context c = new Context ();
             List<string> sink_descriptions = new List<string> ();
@@ -236,7 +245,7 @@ namespace Pulseaudio
                     if (eol == 0) {
                         sink_descriptions.Add (info.Description);
                     } else {
-                        Assert.Contains ("Internal Audio Analog Stereo", sink_descriptions);
+                        Assert.Contains ("Test Description", sink_descriptions);
                         callback_called.Set ();
                     }
                 });
@@ -247,6 +256,8 @@ namespace Pulseaudio
         [Test ()]
         public void SinksAreValidOutsideEnumerateCallback ()
         {
+            helper.AddSink ("Test_Sink_1", "Description1");
+
             Context c = new Context ();
             List<Sink> sinks = new List<Sink> ();
             c.ConnectAndWait ();
@@ -256,8 +267,8 @@ namespace Pulseaudio
             using (Operation o = c.EnumerateSinks (AppendToListCB)) {
                 o.Wait ();
             }
-            Assert.Contains ("Internal Audio Analog Stereo", (from sink in sinks select sink.Description).ToArray ());
-            Assert.Contains ("rtp", (from sink in sinks select sink.Name).ToArray ());
+            Assert.Contains ("Description1", (from sink in sinks select sink.Description).ToArray ());
+            Assert.Contains ("Test_Sink_1", (from sink in sinks select sink.Name).ToArray ());
         }
 
         [Test()]
@@ -297,9 +308,6 @@ namespace Pulseaudio
             Assert.AreEqual ("OK", c.LastError.Message);
         }
 
-        /*
-         * TODO: Make this less hardcoded to my particular lappy
-         */
         [Test()]
         public void GetSinkInfoByIndexReturns ()
         {
