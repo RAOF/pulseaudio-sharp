@@ -39,7 +39,6 @@ namespace Pulseaudio
         {
             helper = new Helper ();
         }
-
         [TearDown]
         public void TearDown ()
         {
@@ -66,13 +65,15 @@ namespace Pulseaudio
         [Test()]
         public void TestGetName ()
         {
+            string sinkDescription = "Just some description string";
+            helper.AddSink ("Test sink", sinkDescription);
             Context c = new Context ();
             c.ConnectAndWait ();
             var sinks = new List<Sink> ();
             using (Operation o = c.EnumerateSinks ((Sink s) => sinks.Add (s))) {
                 o.Wait ();
             }
-            Assert.Contains ("Internal Audio Analog Stereo", (from sink in sinks select sink.Description).ToList ());
+            Assert.Contains (sinkDescription, (from sink in sinks select sink.Description).ToList ());
         }
 
         [Test()]
