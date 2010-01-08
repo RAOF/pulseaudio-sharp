@@ -39,7 +39,6 @@ namespace Pulseaudio
         {
             helper = new Helper ();
         }
-
         [TearDown]
         public void TearDown ()
         {
@@ -66,18 +65,22 @@ namespace Pulseaudio
         [Test()]
         public void TestGetName ()
         {
+            string sinkDescription = "Just some description string";
+            helper.AddSink ("Test sink", sinkDescription);
             Context c = new Context ();
             c.ConnectAndWait ();
             var sinks = new List<Sink> ();
             using (Operation o = c.EnumerateSinks ((Sink s) => sinks.Add (s))) {
                 o.Wait ();
             }
-            Assert.Contains ("Internal Audio Analog Stereo", (from sink in sinks select sink.Description).ToList ());
+            Assert.Contains (sinkDescription, (from sink in sinks select sink.Description).ToList ());
         }
 
         [Test()]
         public void TestVolumeChangedCallbackRuns ()
         {
+            string testSinkName = "VolumeChangeTestSink";
+            helper.AddSink (testSinkName);
             Context c = new Context ();
             c.ConnectAndWait ();
 
@@ -87,23 +90,19 @@ namespace Pulseaudio
             using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
                 o.Wait ();
             }
-            sinks[0].VolumeChanged += (_, __) => {
+            Sink volumeTestSink = sinks.First ((Sink s) => s.Name == testSinkName);
+            volumeTestSink.VolumeChanged += (_, __) => {
                 callbackTriggered.Set ();
             };
-            Volume oldVol = new Volume ();
-            Volume newVol;
-            using (Operation o = sinks[0].GetVolume ((Volume v) => oldVol = v)) {
+            Volume vol = new Volume ();
+            using (Operation o = volumeTestSink.GetVolume ((Volume v) => vol = v)) {
                 o.Wait ();
             }
-            newVol = oldVol.Copy ();
-            newVol.Set (0);
-            using (Operation o = sinks[0].SetVolume (newVol, (_) => {;})) {
+            vol.Modify (0.1);
+            using (Operation o = volumeTestSink.SetVolume (vol, (_) => {;})) {
                 o.Wait ();
             }
             RunUntilEventSignal (() => {;}, callbackTriggered, "Timeout waiting for VolumeChanged signal");
-            using (Operation o = sinks[0].SetVolume (oldVol, (_) => {;})) {
-                o.Wait ();
-            }
         }
 
         [Test]
