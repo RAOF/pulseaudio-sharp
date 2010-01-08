@@ -321,36 +321,7 @@ namespace Pulseaudio
         }
 
 
-        private EventHandler<RawSinkEventArgs> _rawSinkEventHandler;
         private readonly object eventHandlerLock = new object ();
-        internal event EventHandler<RawSinkEventArgs> RawSinkEvent {
-            add {
-                lock (eventHandlerLock) {
-                    if (_rawSinkEventHandler == null) {
-                        pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
-                        Operation o = new Operation (pa_context_subscribe (context,
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_ALL,
-                                                                           (a, b, c) => {;},
-                                                                           IntPtr.Zero));
-                        o.Dispose ();
-                    }
-                    _rawSinkEventHandler += value;
-                }
-            }
-            remove {
-                lock (eventHandlerLock) {
-                    _rawSinkEventHandler -= value;
-                    if (_rawSinkEventHandler == null) {
-                        Operation o = new Operation (pa_context_subscribe (context,
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL,
-                                                                           (a,b,c) => {;},
-                                                                           IntPtr.Zero));
-                        o.Dispose ();
-                    }
-                }
-            }
-        }
-
         private EventHandler<ServerEventArgs> _sinkEventHandler;
         public event EventHandler<ServerEventArgs> SinkEvent {
             add {
@@ -448,10 +419,6 @@ namespace Pulseaudio
             PA_SUBSCRIPTION_EVENT_CHANGE = 0x0010U,/**< A property of the object was modified */
             PA_SUBSCRIPTION_EVENT_REMOVE = 0x0020U,/**< An object was removed */
             PA_SUBSCRIPTION_EVENT_TYPE_MASK = 0x0030U/**< A mask to extract the event operation from an event value */
-        }
-        public class RawSinkEventArgs : EventArgs {
-            public EventType action { get; set;}
-            public UInt32 index {get; set; }
         }
     }
 }
