@@ -40,9 +40,12 @@ namespace Pulseaudio
         /// <param name="name">
         /// A <see cref="System.String"/>.  Name of the sink that will be added.
         /// </param>
-        public void AddSink (string name)
+        /// <param name="description">
+        /// A <see cref="System.String"/>.  Description of the sink that will be added.
+        /// </param>
+        public void AddSink (string name, string description)
         {
-            string cmdLineOpts = String.Format ("load-module module-null-sink sink_name={0}", name);
+            string cmdLineOpts = String.Format ("load-module module-null-sink sink_name=\\\"{0}\\\" sink_properties=\\\"device.description=\\\\\\\"{1}\\\\\\\"\\\"", name, description);
             ProcessStartInfo pactlInfo = new ProcessStartInfo ("/usr/bin/pactl", cmdLineOpts);
             pactlInfo.RedirectStandardOutput = true;
             pactlInfo.UseShellExecute = false;
@@ -54,6 +57,11 @@ namespace Pulseaudio
                 throw new Exception (String.Format ("Unable to add sink to pulseaudio instance.  Return code: {0}", pactl.ExitCode));
             }
             modulesLoaded.Add (int.Parse (pactl.StandardOutput.ReadLine ()));
+        }
+
+        public void AddSink (string name)
+        {
+            AddSink (name, "Null sink, no description added");
         }
 
         public void Dispose ()
