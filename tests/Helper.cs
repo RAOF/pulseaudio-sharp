@@ -27,6 +27,7 @@ namespace Pulseaudio
 {
     public class Helper : IDisposable
     {
+        private bool disposed = false;
         private List<int> modulesLoaded;
 
         public Helper ()
@@ -66,10 +67,13 @@ namespace Pulseaudio
 
         public void Dispose ()
         {
-            UnloadModules ();
-            GC.SuppressFinalize (this);
+            if (!disposed) {
+                UnloadModules ();
+                GC.SuppressFinalize (this);
 
-            modulesLoaded = null;
+                modulesLoaded = null;
+                disposed = true;
+            }
         }
 
         private void UnloadModules ()
