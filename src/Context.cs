@@ -370,6 +370,7 @@ namespace Pulseaudio
         private void SubscriptionEventHandler (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata)
         {
             EventType action = EventType.Error;
+            EventHandler<ServerEventArgs> handler = null;
             switch (e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_TYPE_MASK) {
             case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_CHANGE:
                 action = EventType.Changed;
@@ -381,14 +382,20 @@ namespace Pulseaudio
                 action = EventType.Removed;
                 break;
             }
-            if ((e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK) {
-                EventHandler<ServerEventArgs> handler;
+            switch (e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK:
                 lock (eventHandlerLock) {
                     handler = _sinkEventHandler;
                 }
-                if (handler != null) {
-                    handler (this, new ServerEventArgs (action, index));
+                break;
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK_INPUT:
+                lock (eventHandlerLock) {
+                    handler = _sinkInputEventHandler;
                 }
+                break;
+            }
+            if (handler != null) {
+                handler (this, new ServerEventArgs (action, index));
             }
         }
 
