@@ -357,5 +357,66 @@ namespace Pulseaudio
             }
             Assert.AreEqual (ChannelMap.StereoMapping ().channels, info.DefaultChannelMap.channels);
         }
+
+        [Test]
+        public void SinkAddedEventSignals ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            var eventTriggered = new ManualResetEvent (false);
+
+            c.SinkEvent += delegate(object sender, ServerEventArgs args) {
+                if (args.Type == EventType.Added) {
+                    eventTriggered.Set ();
+                }
+            };
+            MainLoopIterate ();
+
+            helper.AddSink ("Test sink");
+
+            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
+        }
+
+        [Test]
+        public void SinkRemovedEventSignals ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+            helper.AddSink ("Test sink");
+
+            var eventTriggered = new ManualResetEvent (false);
+
+            c.SinkEvent += delegate(object sender, ServerEventArgs args) {
+                if (args.Type == EventType.Removed) {
+                    eventTriggered.Set ();
+                }
+            };
+            MainLoopIterate ();
+
+            //Kill that fancy new sink.
+            helper.Dispose ();
+
+            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
+        }
+
+        [Test]
+        public void SinkInputAddedEventSignals ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            var eventTriggered = new ManualResetEvent (false);
+
+            c.SinkInputEvent += delegate(object sender, ServerEventArgs args) {
+                if (args.Type == EventType.Added) {
+                    eventTriggered.Set ();
+                }
+            };
+            MainLoopIterate ();
+
+            helper.SpawnAplaySinkInput ();
+
+            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for SinkInput added signal");
+        }
     }
 }

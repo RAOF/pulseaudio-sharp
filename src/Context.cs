@@ -25,6 +25,25 @@ using System.Reflection;
 
 namespace Pulseaudio
 {
+    public enum EventType {
+        Added,
+        Changed,
+        Removed,
+        Error
+    }
+
+    public class ServerEventArgs : EventArgs
+    {
+        public ServerEventArgs (EventType t, UInt32 index)
+        {
+            this.Type = t;
+            this.index = index;
+        }
+        public EventType Type { get; private set; }
+        public UInt32 index { get; private set; }
+    }
+
+
     public class Context : IDisposable
     {
         private bool disposed = false;
@@ -77,6 +96,7 @@ namespace Pulseaudio
             loop = new GLibMainLoop ();
             context = new HandleRef (this, pa_context_new (loop.GetAPI (), clientName));
             pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
+            pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
         }
 
         public void Connect ()
@@ -302,58 +322,88 @@ namespace Pulseaudio
         }
 
 
-        private EventHandler<RawSinkEventArgs> _rawSinkEventHandler;
         private readonly object eventHandlerLock = new object ();
-        internal event EventHandler<RawSinkEventArgs> RawSinkEvent {
+        private EventHandler<ServerEventArgs> _sinkEventHandler;
+        public event EventHandler<ServerEventArgs> SinkEvent {
             add {
                 lock (eventHandlerLock) {
-                    if (_rawSinkEventHandler == null) {
-                        pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
-                        Operation o = new Operation (pa_context_subscribe (context,
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_ALL,
-                                                                           (a, b, c) => {;},
-                                                                           IntPtr.Zero));
-                        o.Dispose ();
+                    if (_sinkEventHandler == null) {
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK);
                     }
-                    _rawSinkEventHandler += value;
+                    _sinkEventHandler += value;
                 }
             }
             remove {
                 lock (eventHandlerLock) {
-                    _rawSinkEventHandler -= value;
-                    if (_rawSinkEventHandler == null) {
-                        Operation o = new Operation (pa_context_subscribe (context,
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL,
-                                                                           (a,b,c) => {;},
-                                                                           IntPtr.Zero));
-                        o.Dispose ();
+                    _sinkEventHandler -= value;
+                    if (_sinkEventHandler == null) {
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK);
                     }
                 }
+            }
+        }
+
+        private EventHandler<ServerEventArgs> _sinkInputEventHandler;
+        public event EventHandler<ServerEventArgs> SinkInputEvent {
+            add {
+                lock (eventHandlerLock) {
+                    if (_sinkInputEventHandler == null) {
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK_INPUT);
+                    }
+                    _sinkInputEventHandler += value;
+                }
+            }
+            remove {
+                lock (eventHandlerLock) {
+                    _sinkInputEventHandler -= value;
+                    if (_sinkInputEventHandler == null) {
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK_INPUT);
+                    }
+                }
+            }
+        }
+
+        private SubscriptionMask registeredEvents = SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL;
+        private void UpdateSubscriptions (SubscriptionMask eventType)
+        {
+            if (registeredEvents != (registeredEvents ^ eventType)) {
+                registeredEvents = registeredEvents ^ eventType;
+                using (Operation o = new Operation (pa_context_subscribe (context,
+                                                                   registeredEvents,
+                                                                   (_,__,___) => {;},
+                                                                   IntPtr.Zero))) {}
             }
         }
 
         private void SubscriptionEventHandler (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata)
         {
             EventType action = EventType.Error;
+            EventHandler<ServerEventArgs> handler = null;
             switch (e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_TYPE_MASK) {
             case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_CHANGE:
                 action = EventType.Changed;
                 break;
             case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_NEW:
-                action = EventType.New;
+                action = EventType.Added;
                 break;
             case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_REMOVE:
                 action = EventType.Removed;
                 break;
             }
-            if ((e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK) == 0x0000) {
-                EventHandler<RawSinkEventArgs> handler;
+            switch (e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK:
                 lock (eventHandlerLock) {
-                    handler = _rawSinkEventHandler;
+                    handler = _sinkEventHandler;
                 }
-                if (handler != null) {
-                    handler (this, new RawSinkEventArgs { action = action, index = index });
+                break;
+            case SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK_INPUT:
+                lock (eventHandlerLock) {
+                    handler = _sinkInputEventHandler;
                 }
+                break;
+            }
+            if (handler != null) {
+                handler (this, new ServerEventArgs (action, index));
             }
         }
 
@@ -400,16 +450,6 @@ namespace Pulseaudio
             PA_SUBSCRIPTION_EVENT_CHANGE = 0x0010U,/**< A property of the object was modified */
             PA_SUBSCRIPTION_EVENT_REMOVE = 0x0020U,/**< An object was removed */
             PA_SUBSCRIPTION_EVENT_TYPE_MASK = 0x0030U/**< A mask to extract the event operation from an event value */
-        }
-        public enum EventType {
-            New,
-            Changed,
-            Removed,
-            Error
-        }
-        public class RawSinkEventArgs : EventArgs {
-            public EventType action { get; set;}
-            public UInt32 index {get; set; }
         }
     }
 }
