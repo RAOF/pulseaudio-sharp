@@ -398,5 +398,25 @@ namespace Pulseaudio
 
             RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
         }
+
+        [Test]
+        public void SinkInputAddedEventSignals ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            var eventTriggered = new ManualResetEvent (false);
+
+            c.SinkInputEvent += delegate(object sender, ServerEventArgs args) {
+                if (args.Type == EventType.Added) {
+                    eventTriggered.Set ();
+                }
+            };
+            MainLoopIterate ();
+
+            helper.SpawnAplaySinkInput ();
+
+            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for SinkInput added signal");
+        }
     }
 }

@@ -351,6 +351,22 @@ namespace Pulseaudio
             }
         }
 
+        private EventHandler<ServerEventArgs> _sinkInputEventHandler;
+        public event EventHandler<ServerEventArgs> SinkInputEvent {
+            add {
+                lock (eventHandlerLock) {
+                    SinkEvent += value;
+                    _sinkInputEventHandler += value;
+                }
+            }
+            remove {
+                lock (eventHandlerLock) {
+                    SinkEvent -= value;
+                    _sinkInputEventHandler -= value;
+                }
+            }
+        }
+
         private void SubscriptionEventHandler (IntPtr context, SubscriptionEventMask e, UInt32 index, IntPtr userdata)
         {
             EventType action = EventType.Error;
@@ -365,7 +381,7 @@ namespace Pulseaudio
                 action = EventType.Removed;
                 break;
             }
-            if ((e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK) == 0x0000) {
+            if ((e & SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == SubscriptionEventMask.PA_SUBSCRIPTION_EVENT_SINK) {
                 EventHandler<ServerEventArgs> handler;
                 lock (eventHandlerLock) {
                     handler = _sinkEventHandler;
