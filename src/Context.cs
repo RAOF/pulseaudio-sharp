@@ -96,6 +96,7 @@ namespace Pulseaudio
             loop = new GLibMainLoop ();
             context = new HandleRef (this, pa_context_new (loop.GetAPI (), clientName));
             pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
+            pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
         }
 
         public void Connect ()
@@ -327,12 +328,7 @@ namespace Pulseaudio
             add {
                 lock (eventHandlerLock) {
                     if (_sinkEventHandler == null) {
-                        pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
-                        Operation o = new Operation (pa_context_subscribe (context,
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_ALL,
-                                                                           (a, b, c) => {;},
-                                                                           IntPtr.Zero));
-                        o.Dispose ();
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK);
                     }
                     _sinkEventHandler += value;
                 }
@@ -341,11 +337,7 @@ namespace Pulseaudio
                 lock (eventHandlerLock) {
                     _sinkEventHandler -= value;
                     if (_sinkEventHandler == null) {
-                        Operation o = new Operation (pa_context_subscribe (context,
-                                                                           SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL,
-                                                                           (a,b,c) => {;},
-                                                                           IntPtr.Zero));
-                        o.Dispose ();
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK);
                     }
                 }
             }
@@ -355,15 +347,31 @@ namespace Pulseaudio
         public event EventHandler<ServerEventArgs> SinkInputEvent {
             add {
                 lock (eventHandlerLock) {
-                    SinkEvent += value;
+                    if (_sinkInputEventHandler == null) {
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK_INPUT);
+                    }
                     _sinkInputEventHandler += value;
                 }
             }
             remove {
                 lock (eventHandlerLock) {
-                    SinkEvent -= value;
                     _sinkInputEventHandler -= value;
+                    if (_sinkInputEventHandler == null) {
+                        UpdateSubscriptions (SubscriptionMask.PA_SUBSCRIPTION_MASK_SINK_INPUT);
+                    }
                 }
+            }
+        }
+
+        private SubscriptionMask registeredEvents = SubscriptionMask.PA_SUBSCRIPTION_MASK_NULL;
+        private void UpdateSubscriptions (SubscriptionMask eventType)
+        {
+            if (registeredEvents != (registeredEvents ^ eventType)) {
+                registeredEvents = registeredEvents ^ eventType;
+                using (Operation o = new Operation (pa_context_subscribe (context,
+                                                                   registeredEvents,
+                                                                   (_,__,___) => {;},
+                                                                   IntPtr.Zero))) {}
             }
         }
 
