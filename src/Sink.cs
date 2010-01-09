@@ -146,6 +146,7 @@ namespace Pulseaudio
             this.info = info;
             Name = info.Name;
             Description = info.Description;
+            context.SinkEvent += HandleRawSinkEvent;
         }
 
         public void Dispose ()
@@ -173,6 +174,12 @@ namespace Pulseaudio
             get; private set;
         }
 
+        public Volume Volume {
+            get {
+                return info.volume.Copy ();
+            }
+        }
+
         public delegate void VolumeCallback (Volume vol);
         public Operation GetVolume (VolumeCallback cb)
         {
@@ -194,18 +201,12 @@ namespace Pulseaudio
         public event EventHandler<VolumeChangedEventArgs> VolumeChanged {
             add {
                 lock (eventHandlerLock) {
-                    if (_volumeChangedHandler == null) {
-                        context.SinkEvent += HandleRawSinkEvent;
-                    }
                     _volumeChangedHandler += value;
                 }
             }
             remove {
                 lock (eventHandlerLock) {
                     _volumeChangedHandler -= value;
-                    if (_volumeChangedHandler == null) {
-                        context.SinkEvent -= HandleRawSinkEvent;
-                    }
                 }
             }
         }

@@ -143,5 +143,33 @@ namespace Pulseaudio
             //Flush the mainloop
             while (g::MainContext.Iteration (false)) {}
         }
+
+        [Test]
+        public void VolumePropertyUpdatedWithVolumeChange ()
+        {
+            string testSinkName = "VolumeChangeTestSink";
+            helper.AddSink (testSinkName);
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            var sinks = new List<Sink> ();
+            using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
+                o.Wait ();
+            }
+            Sink volumeTestSink = sinks.First ((Sink s) => s.Name == testSinkName);
+
+            Volume vol = volumeTestSink.Volume;
+            vol.Modify (0.1);
+            Assert.IsFalse (vol.Equals (volumeTestSink.Volume));
+            using (Operation o = volumeTestSink.SetVolume (vol, (_) => {;})) {
+                o.Wait ();
+            }
+
+            while (g::MainContext.Iteration (false)) {}
+            // We need a little time to let the volume changed events bubble through.
+            Thread.Sleep (1);
+            while (g::MainContext.Iteration (false)) {}
+            Assert.AreEqual (vol, volumeTestSink.Volume);
+        }
     }
 }
