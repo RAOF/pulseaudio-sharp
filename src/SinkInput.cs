@@ -56,6 +56,7 @@ namespace Pulseaudio
             Driver = Marshal.PtrToStringAnsi (info.driver);
             PropList temp = new PropList (info.prop_handle);
             Properties = temp.Copy ();
+            ctx.SinkInputEvent += HandleSinkInputEvent;
         }
 
         public void Dispose ()
@@ -108,7 +109,7 @@ namespace Pulseaudio
             get { return info.channel_map; }
         }
         public Volume Vol {
-            get { return info.volume; }
+            get { return info.volume.Copy (); }
         }
         public UInt64 BufferLatency {
             get { return info.buffer_usec; }
@@ -127,6 +128,26 @@ namespace Pulseaudio
         public Operation SetVolume (Volume v, Context.OperationSuccessCallback cb)
         {
             return ctx.SetSinkInputVolume (Index, v, cb);
+        }
+
+        private void HandleSinkInputEvent (object sender, ServerEventArgs args)
+        {
+            if (args.Type == EventType.Changed && args.index == Index) {
+                Operation o = ctx.GetSinkInputInfoByIndex (Index, (NativeSinkInputInfo i, int eol) => {
+                    if (eol == 0) {
+                        UpdateInfo (i);
+                    }
+                });
+                o.Dispose ();
+            }
+        }
+
+        private void UpdateInfo (NativeSinkInputInfo info)
+        {
+            this.info = info;
+            ResampleMethod = Marshal.PtrToStringAnsi (info.resample_method);
+            PropList temp = new PropList (info.prop_handle);
+            Properties = temp.Copy ();
         }
     }
 }

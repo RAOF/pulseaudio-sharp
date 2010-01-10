@@ -86,5 +86,47 @@ namespace Pulseaudio
             SinkInput aplayInput = inputs.FirstOrDefault ((SinkInput input) => input.Properties[Properties.ApplicationProcessBinary] == "aplay");
             Assert.IsNotNull (aplayInput);
         }
+
+        [Test]
+        public void VolumeFieldIsUpdated ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            helper.SpawnAplaySinkInput ();
+
+            SinkInput aplay = null;
+            using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => {
+                if (eol == 0) {
+                    if (input.Properties[Properties.ApplicationProcessBinary] == "aplay") {
+                        aplay = input;
+                    }
+                }
+            })) {
+                opn.Wait ();
+            }
+
+            Volume vol = aplay.Vol;
+            vol.Modify (0.1);
+            Assert.AreNotEqual (vol, aplay.Vol);
+            using (Operation opn = aplay.SetVolume (vol, (_) => {;})) {
+                opn.Wait ();
+            }
+
+            while (g::MainContext.Iteration (false)) {}
+            // Wait for volume change events to percolate
+            Thread.Sleep (1);
+            while (g::MainContext.Iteration (false)) {}
+
+            try {
+                Assert.AreEqual (vol, aplay.Vol);
+            } finally {
+                //Reset the volume to 100%
+                vol.Reset ();
+                using (Operation opn = aplay.SetVolume (vol, (_) => {;})) {
+                    opn.Wait ();
+                }
+            }
+        }
     }
 }
