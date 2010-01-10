@@ -32,18 +32,17 @@ namespace Pulseaudio
     [TestFixture]
     public class TestSinkInput
     {
-        private g.Process aplay;
+        private Helper helper;
         [SetUp]
         public void SetUp ()
         {
-            g.Process.SpawnAsync (null, new string[] {"/usr/bin/aplay", "tests/15seconds.wav"}, null, g.SpawnFlags.StdoutToDevNull | g.SpawnFlags.StderrToDevNull, null, out aplay);
-            System.Threading.Thread.Sleep (200);
+            helper = new Helper ();
         }
 
         [TearDown]
         public void TearDown ()
         {
-            aplay.Close ();
+            helper.Dispose ();
         }
 
         /*
@@ -55,6 +54,9 @@ namespace Pulseaudio
             Context c = new Context ();
             var cbCalled = new ManualResetEvent (false);
             c.ConnectAndWait ();
+
+            helper.SpawnAplaySinkInput ();
+
             List<SinkInput> sinkInputs = new List<SinkInput> ();
             using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => sinkInputs.Add (input))) {
                 opn.Wait ();
@@ -74,6 +76,9 @@ namespace Pulseaudio
         {
             Context c = new Context ();
             c.ConnectAndWait ();
+
+            helper.SpawnAplaySinkInput ();
+
             List<SinkInput> inputs = new List<SinkInput> ();
             using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => inputs.Add (input))) {
                 opn.Wait ();
