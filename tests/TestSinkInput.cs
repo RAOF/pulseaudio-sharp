@@ -61,8 +61,8 @@ namespace Pulseaudio
             using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => sinkInputs.Add (input))) {
                 opn.Wait ();
             }
-            Volume oldVol = sinkInputs[0].Vol.Copy ();
-            Volume v = sinkInputs[0].Vol.Copy ();
+            Volume oldVol = sinkInputs[0].Volume.Copy ();
+            Volume v = sinkInputs[0].Volume.Copy ();
             v.Modify (1.0);
             using (Operation opn = sinkInputs[0].SetVolume (v, (_) => cbCalled.Set ())) {
                 opn.Wait ();
@@ -106,9 +106,9 @@ namespace Pulseaudio
                 opn.Wait ();
             }
 
-            Volume vol = aplay.Vol;
+            Volume vol = aplay.Volume;
             vol.Modify (0.1);
-            Assert.AreNotEqual (vol, aplay.Vol);
+            Assert.AreNotEqual (vol, aplay.Volume);
             using (Operation opn = aplay.SetVolume (vol, (_) => {;})) {
                 opn.Wait ();
             }
@@ -119,7 +119,7 @@ namespace Pulseaudio
             while (g::MainContext.Iteration (false)) {}
 
             try {
-                Assert.AreEqual (vol, aplay.Vol);
+                Assert.AreEqual (vol, aplay.Volume);
             } finally {
                 //Reset the volume to 100%
                 vol.Reset ();

@@ -108,7 +108,7 @@ namespace Pulseaudio
         public ChannelMap Map {
             get { return info.channel_map; }
         }
-        public Volume Vol {
+        public Volume Volume {
             get { return info.volume.Copy (); }
         }
         public UInt64 BufferLatency {
