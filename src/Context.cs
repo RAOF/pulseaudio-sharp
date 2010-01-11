@@ -219,6 +219,17 @@ namespace Pulseaudio
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_get_sink_info_by_index (HandleRef context, UInt32 index, pa_sink_info_cb cb, IntPtr userdata);
 
+        internal Operation GetSinkInputInfoByIndex (UInt32 index, NativeSinkInputInfoCallback cb)
+        {
+            var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) => {
+                cb (info, eol);
+            });
+            return new Operation (pa_context_get_sink_input_info (context, index, wrapped_cb, IntPtr.Zero));
+        }
+
+        internal delegate void NativeSinkInputInfoCallback (NativeSinkInputInfo info, int eol);
+        [DllImport ("pulse")]
+        private static extern IntPtr pa_context_get_sink_input_info (HandleRef context, UInt32 index, pa_sink_input_info_cb cb, IntPtr userdata);
 
         public Operation SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
         {
