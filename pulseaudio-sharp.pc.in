@@ -1,6 +1,7 @@
 Name: PulseAudio#
 Description: PulseAudio# - CIL bindings for the PulseAudio sound server
 Version: @VERSION@
+Libraries: @expanded_libdir@/@PACKAGE@/PulseAudio.dll
 
 Requires: glib-sharp-2.0
-Libs: -r:@expanded_libdir@/@PACKAGE@/PulseAudio.dll
+Libs: -r:PulseAudio.dll
