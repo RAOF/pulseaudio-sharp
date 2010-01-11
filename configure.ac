@@ -20,6 +20,10 @@ AC_DEFUN([FOO_PROG_CSC],
 	      [AC_MSG_ERROR([[could not find C# compiler]])])
 ])
 
+API_VERSION=0.1
+AC_SUBST([API_VERSION])
+AC_SUBST([srcdir])
+
 dnl pkg-config
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 if test "x$PKG_CONFIG" = "xno"; then
@@ -37,6 +41,7 @@ AC_SUBST([GLIB_SHARP_20_LIBS])
 AC_CONFIG_FILES([
 	Makefile
 	pulseaudio-sharp-$VERSION.pc
+	src/AssemblyInfo.cs
 ])
 
 AC_OUTPUT

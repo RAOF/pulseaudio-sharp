@@ -86,7 +86,7 @@ namespace Pulseaudio
             ctx.SinkInputEvent += eventHandler;
             Helper.DrainEventLoop ();
 
-            ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", "tests/15seconds.wav");
+            ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", System.IO.Path.Combine (BuildConfiguration.TestDataDir, "15seconds.wav"));
             p.RedirectStandardOutput = true;
             p.RedirectStandardError = true;
             p.UseShellExecute = false;

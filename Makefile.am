@@ -16,11 +16,11 @@ CSC_V_0 = @echo [CSC] $@;
 		-target:library \
 		-out:$@ \
 		$(addprefix $(srcdir)/, $($*_DLL_SRC)) \
-		$(addprefix $(srcdir)/, $($*_DLL_RESOURCES))
+		$(addprefix $(srcdir)/, $($*_DLL_RESOURCES)) \
+		$(shell ls $(builddir)/**/AssemblyInfo.cs)
 
 pkglib_DATA = PulseAudio.dll
-PulseAudio_DLL_SRC = 	src/AssemblyInfo.cs \
-			src/Channel.cs \
+PulseAudio_DLL_SRC =    src/Channel.cs \
 			src/Context.cs \
 			src/GLib.cs \
 			src/MainLoop.cs \
@@ -52,8 +52,8 @@ TESTS_ENVIRONMENT = nunit-console -labels
 TESTS = Test.dll
 
 CLEANFILES=$(pkglib_DATA) $(check_DATA) TestResult.xml
-DISTCLEANFILES=$(pkgconfig_DATA)
-EXTRA_DIST=$(Test_DLL_SRC) $(PulseAudio_DLL_SRC) tests/15seconds.wav pulseaudio-sharp-$(VERSION).pc.in COPYING HACKING TODO
+DISTCLEANFILES=$(pkgconfig_DATA) src/AssemblyInfo.cs
+EXTRA_DIST=$(Test_DLL_SRC) $(PulseAudio_DLL_SRC) tests/15seconds.wav pulseaudio-sharp-$(VERSION).pc.in COPYING HACKING TODO src/AssemblyInfo.cs.in
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pulseaudio-sharp-$(VERSION).pc
