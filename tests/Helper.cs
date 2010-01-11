@@ -128,12 +128,5 @@ namespace Pulseaudio
                 p.Kill ();
             }
         }
-
-        ~Helper ()
-        {
-            if (modulesLoaded != null) {
-                UnloadModules ();
-            }
-        }
     }
 }
