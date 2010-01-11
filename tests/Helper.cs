@@ -22,6 +22,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
+using g = GLib;
+
+using Pulseaudio.GLib;
 
 namespace Pulseaudio
 {
@@ -30,11 +34,14 @@ namespace Pulseaudio
         private bool disposed = false;
         private List<int> modulesLoaded;
         private List<Process> processesSpawned;
+        private Context ctx;
 
         public Helper ()
         {
             modulesLoaded = new List<int> ();
             processesSpawned = new List<Process> ();
+            ctx = new Context ("PulseAudio testing helper");
+            ctx.ConnectAndWait ();
         }
 
         /// <summary>
@@ -69,12 +76,28 @@ namespace Pulseaudio
 
         public void SpawnAplaySinkInput ()
         {
+            var inputAdded = new ManualResetEvent (false);
+            EventHandler<ServerEventArgs> eventHandler = delegate (object sender, ServerEventArgs args) {
+                if (args.Type == EventType.Added) {
+                    inputAdded.Set ();
+                }
+            };
+            ctx.SinkInputEvent += eventHandler;
+            while (g::MainContext.Iteration (false)) {}
+
             ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", "tests/15seconds.wav");
             p.RedirectStandardOutput = true;
             p.RedirectStandardError = true;
             p.UseShellExecute = false;
             processesSpawned.Add (Process.Start (p));
-            System.Threading.Thread.Sleep (50);
+
+            //Wait until we get a new SinkInput event.
+            while (!inputAdded.WaitOne (0)) {
+                while (g::MainContext.Iteration (false)) {}
+            }
+
+            //And unregister our handler
+            ctx.SinkInputEvent -= eventHandler;
         }
 
         public void Dispose ()
@@ -82,8 +105,10 @@ namespace Pulseaudio
             if (!disposed) {
                 UnloadModules ();
                 KillProcesses ();
+                ctx.Dispose ();
                 GC.SuppressFinalize (this);
 
+                processesSpawned = null;
                 modulesLoaded = null;
                 disposed = true;
             }
@@ -101,13 +126,6 @@ namespace Pulseaudio
         {
             foreach (Process p in processesSpawned) {
                 p.Kill ();
-            }
-        }
-
-        ~Helper ()
-        {
-            if (modulesLoaded != null) {
-                UnloadModules ();
             }
         }
     }
