@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using g = GLib;
+using NUnit.Framework;
 
 using Pulseaudio.GLib;
 
@@ -98,6 +99,23 @@ namespace Pulseaudio
 
             //And unregister our handler
             ctx.SinkInputEvent -= eventHandler;
+        }
+
+        public static void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
+        {
+            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
+            g::Timeout.Add (1000, () =>
+            {
+                timeout.Set ();
+                return false;
+            });
+            action ();
+            while (!until.WaitOne (0, true)) {
+                g::MainContext.Iteration (false);
+                if (timeout.WaitOne (0, true)) {
+                    Assert.Fail (timeoutMessage);
+                }
+            }
         }
 
         public void Dispose ()

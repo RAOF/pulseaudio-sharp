@@ -45,23 +45,6 @@ namespace Pulseaudio
             helper.Dispose ();
         }
 
-        private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
-        {
-            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
-            g::Timeout.Add (1000, () =>
-            {
-                timeout.Set ();
-                return false;
-            });
-            action ();
-            while (!until.WaitOne (0, true)) {
-                g::MainContext.Iteration (false);
-                if (timeout.WaitOne (0, true)) {
-                    Assert.Fail (timeoutMessage);
-                }
-            }
-        }
-
         [Test()]
         public void TestGetName ()
         {
@@ -102,7 +85,7 @@ namespace Pulseaudio
             using (Operation o = volumeTestSink.SetVolume (vol, (_) => {;})) {
                 o.Wait ();
             }
-            RunUntilEventSignal (() => {;}, callbackTriggered, "Timeout waiting for VolumeChanged signal");
+            Helper.RunUntilEventSignal (() => {;}, callbackTriggered, "Timeout waiting for VolumeChanged signal");
         }
 
         [Test]
