@@ -70,6 +70,7 @@ namespace Pulseaudio
             if (!disposed) {
                 if (explicitlyCalled) {
                     Properties.Dispose ();
+                    ctx.SinkInputEvent -= HandleSinkInputEvent;
                 }
                 disposed = true;
             }
@@ -132,7 +133,8 @@ namespace Pulseaudio
 
         private void HandleSinkInputEvent (object sender, ServerEventArgs args)
         {
-            if (args.Type == EventType.Changed && args.index == Index) {
+            Context c = sender as Context;
+            if (args.Type == EventType.Changed && args.index == Index && c != null) {
                 Operation o = ctx.GetSinkInputInfoByIndex (Index, (NativeSinkInputInfo i, int eol) => {
                     if (eol == 0) {
                         UpdateInfo (i);
