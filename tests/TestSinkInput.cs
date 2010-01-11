@@ -128,5 +128,59 @@ namespace Pulseaudio
                 }
             }
         }
+
+        [Test]
+        public void VolumeChangedEventFires ()
+        {
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            helper.SpawnAplaySinkInput ();
+
+            SinkInput aplay = null;
+            using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => {
+                if (eol == 0) {
+                    if (input.Properties[Properties.ApplicationProcessBinary] == "aplay") {
+                        aplay = input;
+                    }
+                }
+            })) {
+                opn.Wait ();
+            }
+            Assert.IsNotNull (aplay, "Testing error: aplay SinkInput not found");
+
+            var volumeChangedEventTriggered = new ManualResetEvent (false);
+            aplay.VolumeChanged += delegate(object sender, SinkInput.VolumeChangedEventArgs e) {
+                volumeChangedEventTriggered.Set ();
+            };
+            // Ensure the volume changed callback is hooked up.
+            while (g::MainContext.Iteration (false)) {}
+
+            Volume vol = aplay.Volume;
+            vol.Modify (0.1);
+
+            using (Operation o = aplay.SetVolume (vol, (_)=>{;})) {
+                o.Wait ();
+            }
+
+            RunUntilEventSignal (() => {;}, volumeChangedEventTriggered, "Timeout waiting for VolumeChanged signal");
+        }
+
+        private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
+        {
+            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
+            g::Timeout.Add (1000, () =>
+            {
+                timeout.Set ();
+                return false;
+            });
+            action ();
+            while (!until.WaitOne (0, true)) {
+                g::MainContext.Iteration (false);
+                if (timeout.WaitOne (0, true)) {
+                    Assert.Fail (timeoutMessage);
+                }
+            }
+        }
     }
 }
