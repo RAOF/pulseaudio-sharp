@@ -48,7 +48,7 @@ Test_DLL_SRC = 	tests/Helper.cs \
 		tests/TestUtil.cs \
 		tests/TestVolume.cs
 Test_DLL_CSCFLAGS = -pkg:nunit -pkg:glib-sharp-2.0 -r:PulseAudio.dll
-TESTS_ENVIRONMENT = nunit-console
+TESTS_ENVIRONMENT = nunit-console -labels
 TESTS = Test.dll
 
 CLEANFILES=$(pkglib_DATA) $(check_DATA) TestResult.xml
