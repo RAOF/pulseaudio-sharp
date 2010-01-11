@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using g = GLib;
+using NUnit.Framework;
 
 using Pulseaudio.GLib;
 
@@ -83,7 +84,7 @@ namespace Pulseaudio
                 }
             };
             ctx.SinkInputEvent += eventHandler;
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
 
             ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", "tests/15seconds.wav");
             p.RedirectStandardOutput = true;
@@ -93,11 +94,33 @@ namespace Pulseaudio
 
             //Wait until we get a new SinkInput event.
             while (!inputAdded.WaitOne (0)) {
-                while (g::MainContext.Iteration (false)) {}
+                Helper.DrainEventLoop ();
             }
 
             //And unregister our handler
             ctx.SinkInputEvent -= eventHandler;
+        }
+
+        public static void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
+        {
+            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
+            g::Timeout.Add (1000, () =>
+            {
+                timeout.Set ();
+                return false;
+            });
+            action ();
+            while (!until.WaitOne (0, true)) {
+                DrainEventLoop ();
+                if (timeout.WaitOne (0, true)) {
+                    Assert.Fail (timeoutMessage);
+                }
+            }
+        }
+
+        public static void DrainEventLoop ()
+        {
+            while (g::MainContext.Iteration (false)) {}
         }
 
         public void Dispose ()

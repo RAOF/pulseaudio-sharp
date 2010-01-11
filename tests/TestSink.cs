@@ -45,23 +45,6 @@ namespace Pulseaudio
             helper.Dispose ();
         }
 
-        private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
-        {
-            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
-            g::Timeout.Add (1000, () =>
-            {
-                timeout.Set ();
-                return false;
-            });
-            action ();
-            while (!until.WaitOne (0, true)) {
-                g::MainContext.Iteration (false);
-                if (timeout.WaitOne (0, true)) {
-                    Assert.Fail (timeoutMessage);
-                }
-            }
-        }
-
         [Test()]
         public void TestGetName ()
         {
@@ -102,7 +85,7 @@ namespace Pulseaudio
             using (Operation o = volumeTestSink.SetVolume (vol, (_) => {;})) {
                 o.Wait ();
             }
-            RunUntilEventSignal (() => {;}, callbackTriggered, "Timeout waiting for VolumeChanged signal");
+            Helper.RunUntilEventSignal (() => {;}, callbackTriggered, "Timeout waiting for VolumeChanged signal");
         }
 
         [Test]
@@ -123,7 +106,7 @@ namespace Pulseaudio
                 Assert.Fail ("VolumeChanged callback run after Sink was disposed");
             };
 
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             testSink.Dispose ();
 
             // Find the sink again...
@@ -141,7 +124,7 @@ namespace Pulseaudio
                 o.Wait ();
             }
             //Flush the mainloop
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
         }
 
         [Test]
@@ -165,10 +148,10 @@ namespace Pulseaudio
                 o.Wait ();
             }
 
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             // We need a little time to let the volume changed events bubble through.
             Thread.Sleep (1);
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             Assert.AreEqual (vol, volumeTestSink.Volume);
         }
     }

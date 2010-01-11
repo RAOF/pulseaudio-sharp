@@ -113,10 +113,10 @@ namespace Pulseaudio
                 opn.Wait ();
             }
 
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             // Wait for volume change events to percolate
             Thread.Sleep (1);
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
 
             try {
                 Assert.AreEqual (vol, aplay.Volume);
@@ -154,7 +154,7 @@ namespace Pulseaudio
                 volumeChangedEventTriggered.Set ();
             };
             // Ensure the volume changed callback is hooked up.
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
 
             Volume vol = aplay.Volume;
             vol.Modify (0.1);
@@ -163,24 +163,7 @@ namespace Pulseaudio
                 o.Wait ();
             }
 
-            RunUntilEventSignal (() => {;}, volumeChangedEventTriggered, "Timeout waiting for VolumeChanged signal");
-        }
-
-        private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
-        {
-            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
-            g::Timeout.Add (1000, () =>
-            {
-                timeout.Set ();
-                return false;
-            });
-            action ();
-            while (!until.WaitOne (0, true)) {
-                g::MainContext.Iteration (false);
-                if (timeout.WaitOne (0, true)) {
-                    Assert.Fail (timeoutMessage);
-                }
-            }
+            Helper.RunUntilEventSignal (() => {;}, volumeChangedEventTriggered, "Timeout waiting for VolumeChanged signal");
         }
     }
 }

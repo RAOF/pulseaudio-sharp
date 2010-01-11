@@ -50,43 +50,11 @@ namespace Pulseaudio
             helper.Dispose ();
         }
 
-        private void MainLoopIterate ()
-        {
-            while (g::MainContext.Iteration (false))
-            { }
-        }
-
-        private void ActWithMainLoop (Action action)
-        {
-            EventWaitHandle action_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
-            g::Timeout.Add (0, delegate {
-                action ();
-                action_finished.Set ();
-                return false;
-            });
-            while (!action_finished.WaitOne (0, true)) {
-                MainLoopIterate ();
-            }
-        }
-
-        private void RunUntilEventSignal (Action action, EventWaitHandle until, string timeoutMessage)
-        {
-            var timeout = new EventWaitHandle (false, EventResetMode.AutoReset);
-            g::Timeout.Add (1000, () => {timeout.Set (); return false;});
-            action ();
-            while (!until.WaitOne (0, true)) {
-                MainLoopIterate ();
-                if (timeout.WaitOne (0, true)) {
-                    Assert.Fail (timeoutMessage);
-                }
-            }
-        }
-
         [Test()]
         public void TestGetServerVersion()
         {
             Context s = new Context ();
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
             Assert.AreEqual ("pulseaudio 0.9.16-test2", s.Version);
         }
 
@@ -102,7 +70,7 @@ namespace Pulseaudio
             s.Ready += delegate {
                 connection_finished.Set ();
             };
-            RunUntilEventSignal (s.Connect, connection_finished, "Timeout waiting for Connect");
+            Helper.RunUntilEventSignal (s.Connect, connection_finished, "Timeout waiting for Connect");
             Assert.AreEqual (16, s.ServerAPI);
         }
 
@@ -114,7 +82,7 @@ namespace Pulseaudio
             c.Ready += delegate { flag = true; };
             c.Connect ();
             while (!flag) {
-                MainLoopIterate ();
+                Helper.DrainEventLoop ();
             }
             Assert.IsTrue (flag);
         }
@@ -126,7 +94,7 @@ namespace Pulseaudio
             Context c = new Context ();
             c.Connecting += delegate { flag = true; };
             c.Connect ();
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
             Assert.IsTrue (flag);
         }
 
@@ -145,7 +113,7 @@ namespace Pulseaudio
             c.Ready += delegate {
                 connection_finished.Set ();
             };
-            RunUntilEventSignal (c.Connect, connection_finished, "Timeout waiting for Connect to finish");
+            Helper.RunUntilEventSignal (c.Connect, connection_finished, "Timeout waiting for Connect to finish");
             Assert.AreEqual (Context.ConnectionState.Ready, c.State);
         }
 
@@ -159,7 +127,7 @@ namespace Pulseaudio
                     callback_called.Set ();
                 });
             };
-            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinkInputs");
+            Helper.RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinkInputs");
         }
 
         [Test()]
@@ -172,7 +140,7 @@ namespace Pulseaudio
             c.EnumerateSinks ((cb, eol) => {
                     callback_called.Set ();
             });
-            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+            Helper.RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
         [Test()]
@@ -191,7 +159,7 @@ namespace Pulseaudio
                     }
                 });
             };
-            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+            Helper.RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
         [Test()]
@@ -210,7 +178,7 @@ namespace Pulseaudio
                     }
                 });
             };
-            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+            Helper.RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
         [Test()]
@@ -230,7 +198,7 @@ namespace Pulseaudio
                     }
                 });
             };
-            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+            Helper.RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
         [Test()]
@@ -250,7 +218,7 @@ namespace Pulseaudio
                     }
                 });
             };
-            RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
+            Helper.RunUntilEventSignal (c.Connect, callback_called, "Timeout waiting for EnumerateSinks");
         }
 
         [Test ()]
@@ -284,7 +252,7 @@ namespace Pulseaudio
             }
             vol.Set (1);
             c.SetSinkVolume (1, vol, (int success) => {volume_set.Set ();});
-            RunUntilEventSignal (c.Connect, volume_set, "Timeout waiting for volume set");
+            Helper.RunUntilEventSignal (c.Connect, volume_set, "Timeout waiting for volume set");
         }
 
         [Test()]
@@ -370,11 +338,11 @@ namespace Pulseaudio
                     eventTriggered.Set ();
                 }
             };
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
 
             helper.AddSink ("Test sink");
 
-            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
+            Helper.RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
         }
 
         [Test]
@@ -391,12 +359,12 @@ namespace Pulseaudio
                     eventTriggered.Set ();
                 }
             };
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
 
             //Kill that fancy new sink.
             helper.Dispose ();
 
-            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
+            Helper.RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
         }
 
         [Test]
@@ -412,11 +380,11 @@ namespace Pulseaudio
                     eventTriggered.Set ();
                 }
             };
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
 
             helper.SpawnAplaySinkInput ();
 
-            RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for SinkInput added signal");
+            Helper.RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for SinkInput added signal");
         }
     }
 }
