@@ -111,7 +111,7 @@ namespace Pulseaudio
             });
             action ();
             while (!until.WaitOne (0, true)) {
-                g::MainContext.Iteration (false);
+                DrainEventLoop ();
                 if (timeout.WaitOne (0, true)) {
                     Assert.Fail (timeoutMessage);
                 }
