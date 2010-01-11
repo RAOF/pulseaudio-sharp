@@ -80,7 +80,7 @@ namespace Pulseaudio
             helper.SpawnAplaySinkInput ();
 
             List<SinkInput> inputs = new List<SinkInput> ();
-            using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => inputs.Add (input))) {
+            using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => {if (eol == 0) {inputs.Add (input);}})) {
                 opn.Wait ();
             }
             SinkInput aplayInput = inputs.FirstOrDefault ((SinkInput input) => input.Properties[Properties.ApplicationProcessBinary] == "aplay");
