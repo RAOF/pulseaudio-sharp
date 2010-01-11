@@ -1,0 +1,10 @@
+Hacking on PulseAudio#:
+  * We use Launchpad: https://launchpad.net/pulseaudio-sharp and Bazaar
+  * If you'd like to contribute some changes, you have a number of options:
+    + Create a merge-request for your bzr branch on Launchpad
+    + Create a patch in unified-diff format (diff -u) and attach it to a 
+      bug on Launchpad.
+    + Create a patch in unified-diff format and attach it to a mail on the
+      pa-sharp-core@launchpad.net mailing list.
+  * Branches and patches which include unit-tests are preferred, and
+    will be looked at first.

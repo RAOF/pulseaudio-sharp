@@ -53,7 +53,7 @@ TESTS = Test.dll
 
 CLEANFILES=$(pkglib_DATA) $(check_DATA) TestResult.xml
 DISTCLEANFILES=$(pkgconfig_DATA)
-EXTRA_DIST=$(Test_DLL_SRC) $(PulseAudio_DLL_SRC) tests/15seconds.wav pulseaudio-sharp.pc.in
+EXTRA_DIST=$(Test_DLL_SRC) $(PulseAudio_DLL_SRC) tests/15seconds.wav pulseaudio-sharp-$(VERSION).pc.in COPYING HACKING TODO
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pulseaudio-sharp-$(VERSION).pc

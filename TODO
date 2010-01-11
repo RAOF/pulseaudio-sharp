@@ -1,0 +1,20 @@
+* Testing:
+  + Context tests should be audited for Ed-specificity
+  + Context tests SetUp should not instantiate two sinks; each test
+    which requires them should explicitly set them up.
+  + Tests are starting to get too slow
+
+* Bindings
+  + Need to bind:
+    - Clients
+    - Cards
+    - Sources
+    - Source Outputs
+    - Modules
+    - Cached Samples
+    - Audio Streams
+  + Volume
+    - Support for dB & linear volume
+  + Sinks
+    - Support for various sink capabilities: dB & linear volumes,
+      latency, etc
