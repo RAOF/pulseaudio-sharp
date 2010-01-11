@@ -106,7 +106,7 @@ namespace Pulseaudio
                 Assert.Fail ("VolumeChanged callback run after Sink was disposed");
             };
 
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             testSink.Dispose ();
 
             // Find the sink again...
@@ -124,7 +124,7 @@ namespace Pulseaudio
                 o.Wait ();
             }
             //Flush the mainloop
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
         }
 
         [Test]
@@ -148,10 +148,10 @@ namespace Pulseaudio
                 o.Wait ();
             }
 
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             // We need a little time to let the volume changed events bubble through.
             Thread.Sleep (1);
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             Assert.AreEqual (vol, volumeTestSink.Volume);
         }
     }

@@ -113,10 +113,10 @@ namespace Pulseaudio
                 opn.Wait ();
             }
 
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
             // Wait for volume change events to percolate
             Thread.Sleep (1);
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
 
             try {
                 Assert.AreEqual (vol, aplay.Volume);
@@ -154,7 +154,7 @@ namespace Pulseaudio
                 volumeChangedEventTriggered.Set ();
             };
             // Ensure the volume changed callback is hooked up.
-            while (g::MainContext.Iteration (false)) {}
+            Helper.DrainEventLoop ();
 
             Volume vol = aplay.Volume;
             vol.Modify (0.1);

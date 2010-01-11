@@ -50,30 +50,11 @@ namespace Pulseaudio
             helper.Dispose ();
         }
 
-        private void MainLoopIterate ()
-        {
-            while (g::MainContext.Iteration (false))
-            { }
-        }
-
-        private void ActWithMainLoop (Action action)
-        {
-            EventWaitHandle action_finished = new EventWaitHandle (false, EventResetMode.AutoReset);
-            g::Timeout.Add (0, delegate {
-                action ();
-                action_finished.Set ();
-                return false;
-            });
-            while (!action_finished.WaitOne (0, true)) {
-                MainLoopIterate ();
-            }
-        }
-
         [Test()]
         public void TestGetServerVersion()
         {
             Context s = new Context ();
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
             Assert.AreEqual ("pulseaudio 0.9.16-test2", s.Version);
         }
 
@@ -101,7 +82,7 @@ namespace Pulseaudio
             c.Ready += delegate { flag = true; };
             c.Connect ();
             while (!flag) {
-                MainLoopIterate ();
+                Helper.DrainEventLoop ();
             }
             Assert.IsTrue (flag);
         }
@@ -113,7 +94,7 @@ namespace Pulseaudio
             Context c = new Context ();
             c.Connecting += delegate { flag = true; };
             c.Connect ();
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
             Assert.IsTrue (flag);
         }
 
@@ -357,7 +338,7 @@ namespace Pulseaudio
                     eventTriggered.Set ();
                 }
             };
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
 
             helper.AddSink ("Test sink");
 
@@ -378,7 +359,7 @@ namespace Pulseaudio
                     eventTriggered.Set ();
                 }
             };
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
 
             //Kill that fancy new sink.
             helper.Dispose ();
@@ -399,7 +380,7 @@ namespace Pulseaudio
                     eventTriggered.Set ();
                 }
             };
-            MainLoopIterate ();
+            Helper.DrainEventLoop ();
 
             helper.SpawnAplaySinkInput ();
 
