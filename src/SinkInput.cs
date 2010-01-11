@@ -131,6 +131,18 @@ namespace Pulseaudio
             return ctx.SetSinkInputVolume (Index, v, cb);
         }
 
+        public class VolumeChangedEventArgs : EventArgs
+        {
+            public VolumeChangedEventArgs (Volume vol)
+            {
+                newVolume = vol;
+            }
+
+            public Volume newVolume { get; private set; }
+        }
+
+        public event EventHandler<VolumeChangedEventArgs> VolumeChanged;
+
         private void HandleSinkInputEvent (object sender, ServerEventArgs args)
         {
             Context c = sender as Context;
@@ -146,6 +158,13 @@ namespace Pulseaudio
 
         private void UpdateInfo (NativeSinkInputInfo info)
         {
+            if (this.info.volume != info.volume) {
+                EventHandler<VolumeChangedEventArgs> handler;
+                handler = VolumeChanged;
+                if (handler != null) {
+                    handler (this, new VolumeChangedEventArgs (info.volume));
+                }
+            }
             this.info = info;
             ResampleMethod = Marshal.PtrToStringAnsi (info.resample_method);
             PropList temp = new PropList (info.prop_handle);
