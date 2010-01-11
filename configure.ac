@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.54])
 
 AC_INIT([[PulseAudio#]],
-	[0.0], 
+	[0.1], 
 	[https://bugs.edge.launchpad.net/pulseaudio-sharp/+filebug],
 	[pulseaudio-sharp],
 	[https://launchpad.net/pulseaudio-sharp])
@@ -36,7 +36,7 @@ AC_SUBST([GLIB_SHARP_20_LIBS])
 
 AC_CONFIG_FILES([
 	Makefile
-	pulseaudio-sharp.pc
+	pulseaudio-sharp-$VERSION.pc
 ])
 
 AC_OUTPUT

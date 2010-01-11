@@ -56,7 +56,7 @@ DISTCLEANFILES=$(pkgconfig_DATA)
 EXTRA_DIST=$(Test_DLL_SRC) $(PulseAudio_DLL_SRC) tests/15seconds.wav pulseaudio-sharp.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = pulseaudio-sharp.pc
+pkgconfig_DATA = pulseaudio-sharp-$(VERSION).pc
 
 clean-local:
 	rm -rf %temp%
