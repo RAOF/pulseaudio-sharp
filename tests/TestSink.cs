@@ -43,6 +43,7 @@ namespace Pulseaudio
         public void TearDown ()
         {
             helper.Dispose ();
+            GC.Collect ();
         }
 
         [Test()]

@@ -40,14 +40,13 @@ namespace Pulseaudio
         public void SetUp ()
         {
             helper = new Helper ();
-            helper.AddSink ("Default Test Sink 1");
-            helper.AddSink ("Default Test Sink 2");
         }
 
         [TearDown]
         public void TearDown ()
         {
             helper.Dispose ();
+            GC.Collect ();
         }
 
         [Test()]
