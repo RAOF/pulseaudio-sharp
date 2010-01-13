@@ -22,34 +22,48 @@ using System.Runtime.InteropServices;
 
 namespace Pulseaudio
 {
-    public interface MainLoop
+    public interface MainLoop : IDisposable
     {
         //TODO: Make this into an actual managed implementation of a Pulseaudio main loop
         //For the moment, just require that we can get a pa_mainloop_api pointer out.
         IntPtr GetAPI ();
     }
 
-    public class GLibMainLoop : MainLoop, IDisposable
+    public class GLibMainLoop : MainLoop
     {
-        IntPtr pa_mainloop = new IntPtr (0);
+        IntPtr pa_mainloop = IntPtr.Zero;
+        bool disposed = false;
 
         public GLibMainLoop ()
         {
-            pa_mainloop = pa_glib_mainloop_new (g_main_context_default ());
+            pa_mainloop = pa_glib_mainloop_new (IntPtr.Zero);
         }
 
         public IntPtr GetAPI ()
         {
-            if (pa_mainloop == new IntPtr (0)) {
-                throw new Exception ("Foo");
+            if (disposed) {
+                throw new ObjectDisposedException ("GLibMainLoop", "GLibMainLoop used after being disposed!");
             }
             return pa_glib_mainloop_get_api (pa_mainloop);
         }
 
         public void Dispose ()
         {
-            pa_glib_mainloop_free (pa_mainloop);
-            pa_mainloop = new IntPtr (0);
+            Dispose (true);
+            GC.SuppressFinalize (this);
+        }
+
+        protected virtual void Dispose (bool explicitlyCalled)
+        {
+            if (!disposed) {
+                pa_glib_mainloop_free (pa_mainloop);
+                disposed = true;
+            }
+        }
+
+        ~GLibMainLoop ()
+        {
+            Dispose (false);
         }
 
         [DllImport ("pulse-mainloop-glib")]
@@ -58,8 +72,5 @@ namespace Pulseaudio
         private static extern IntPtr pa_glib_mainloop_get_api (IntPtr pa_mainloop);
         [DllImport ("pulse-mainloop-glib")]
         private static extern void pa_glib_mainloop_free (IntPtr pa_mainloop);
-
-        [DllImport ("glib-2.0")]
-        private static extern IntPtr g_main_context_default ();
     }
 }
