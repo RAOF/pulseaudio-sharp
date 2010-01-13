@@ -180,8 +180,6 @@ namespace Pulseaudio
             {
                 if (eol == 0) {
                     cb (new SinkInput (info, this), eol);
-                } else {
-                    cb (null, eol);
                 }
             });
             return new Operation (pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero));
