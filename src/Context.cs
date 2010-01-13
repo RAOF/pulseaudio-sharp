@@ -138,10 +138,9 @@ namespace Pulseaudio
 
         private delegate void ContextNotifyCB (IntPtr context, IntPtr userdata);
 
-        private void ContextNotifyHandler (IntPtr context, IntPtr userdata)
+        private void ContextNotifyHandler (IntPtr unused, IntPtr userdata)
         {
-            HandleRef c = new HandleRef (this, context);
-            switch (pa_context_get_state (c)) {
+            switch (pa_context_get_state (context)) {
             case ConnectionState.Ready:
                 if (Ready != null) {
                     Ready ();
