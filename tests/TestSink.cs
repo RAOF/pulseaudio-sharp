@@ -151,8 +151,11 @@ namespace Pulseaudio
 
             Helper.DrainEventLoop ();
             // We need a little time to let the volume changed events bubble through.
-            Thread.Sleep (1);
+            Thread.Sleep (100);
             Helper.DrainEventLoop ();
+            Thread.Sleep (100);
+            Helper.DrainEventLoop ();
+            
             Assert.AreEqual (vol, volumeTestSink.Volume);
         }
     }

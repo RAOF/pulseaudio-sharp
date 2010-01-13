@@ -116,7 +116,9 @@ namespace Pulseaudio
 
             Helper.DrainEventLoop ();
             // Wait for volume change events to percolate
-            Thread.Sleep (1);
+            Thread.Sleep (200);
+            Helper.DrainEventLoop ();
+            Thread.Sleep (10);
             Helper.DrainEventLoop ();
 
             try {
