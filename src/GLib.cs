@@ -42,7 +42,7 @@ namespace Pulseaudio.GLib
             };
             context.Connect ();
             while (!ready.WaitOne (0, true)) {
-                MainContext.Iteration ();
+                while (MainContext.Iteration (false)) {};
             }
         }
     }
