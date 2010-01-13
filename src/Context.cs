@@ -74,14 +74,19 @@ namespace Pulseaudio
         protected virtual void Dispose (bool explicitlyCalled)
         {
             if (!disposed) {
-                if (!explicitlyCalled) {
-                    //If we're being Finialised we need to unset the state callback.
-                    //Otherwise, PulseAudio will try to call this.ContextNotifyHandler to tell us that
-                    //we've disconnected, and unfriendlyness will occur.
-                    pa_context_set_state_callback (context, (_, __) => {;}, IntPtr.Zero);
+                if (explicitlyCalled) {
+                    pa_context_set_state_callback (context, null, IntPtr.Zero);
+                    pa_context_set_subscribe_callback (context, null, IntPtr.Zero);
+                    pa_context_disconnect (context);
                 }
-                pa_context_disconnect (context);
+                _sinkEventHandler = null;
+                _sinkInputEventHandler = null;
                 pa_context_unref (context);
+                if (explicitlyCalled) {
+                    loop.Dispose ();
+                } else {
+                    GC.ReRegisterForFinalize (loop);
+                }
                 disposed = true;
             }
         }
@@ -94,6 +99,7 @@ namespace Pulseaudio
         private void Init (string clientName)
         {
             loop = new GLibMainLoop ();
+            GC.SuppressFinalize (loop);
             context = new HandleRef (this, pa_context_new (loop.GetAPI (), clientName));
             pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
             pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
