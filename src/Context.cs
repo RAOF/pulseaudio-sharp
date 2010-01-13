@@ -74,13 +74,11 @@ namespace Pulseaudio
         protected virtual void Dispose (bool explicitlyCalled)
         {
             if (!disposed) {
-                if (explicitlyCalled) {
-                    pa_context_set_state_callback (context, null, IntPtr.Zero);
-                    pa_context_set_subscribe_callback (context, null, IntPtr.Zero);
-                    pa_context_disconnect (context);
-                }
+                pa_context_set_state_callback (context, null, IntPtr.Zero);
+                pa_context_set_subscribe_callback (context, null, IntPtr.Zero);
                 _sinkEventHandler = null;
                 _sinkInputEventHandler = null;
+                pa_context_disconnect (context);
                 pa_context_unref (context);
                 if (explicitlyCalled) {
                     loop.Dispose ();
