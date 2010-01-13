@@ -193,7 +193,11 @@ namespace Pulseaudio
             var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
             });
-            return new Operation (pa_context_get_sink_info_list (context, wrapped_cb, IntPtr.Zero));
+            try {
+                return new Operation (pa_context_get_sink_info_list (context, wrapped_cb, IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error enumerating sinks: {0}", LastError.Message));
+            }
         }
 
         internal delegate void SinkInfoCallback (SinkInfo info, int eol);
@@ -216,7 +220,11 @@ namespace Pulseaudio
             var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
             });
-            return new Operation (pa_context_get_sink_info_by_index (context, index, wrapped_cb, IntPtr.Zero));
+            try {
+                return new Operation (pa_context_get_sink_info_by_index (context, index, wrapped_cb, IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error getting SinkInfo for index {0}: {1}", index, LastError.Message));
+            }
         }
 
         [DllImport ("pulse")]
@@ -227,7 +235,11 @@ namespace Pulseaudio
             var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
             });
-            return new Operation (pa_context_get_sink_input_info (context, index, wrapped_cb, IntPtr.Zero));
+            try {
+                return new Operation (pa_context_get_sink_input_info (context, index, wrapped_cb, IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error getting SinkInputInfo for index {0}: {1}", index, LastError.Message));
+            }
         }
 
         internal delegate void NativeSinkInputInfoCallback (NativeSinkInputInfo info, int eol);
@@ -382,10 +394,19 @@ namespace Pulseaudio
         {
             if (registeredEvents != (registeredEvents ^ eventType)) {
                 registeredEvents = registeredEvents ^ eventType;
-                using (Operation o = new Operation (pa_context_subscribe (context,
-                                                                   registeredEvents,
-                                                                   (_,__,___) => {;},
-                                                                   IntPtr.Zero))) {}
+                Operation opn = null;
+                try {
+                    opn = new Operation (pa_context_subscribe (context,
+                                                               registeredEvents,
+                                                               (_,__,___) => {;},
+                                                               IntPtr.Zero));
+                } catch (ArgumentNullException) {
+                    throw new Exception (String.Format ("Error subscribing to server events: {0}", LastError.Message));
+                } finally {
+                    if (opn != null) {
+                        opn.Dispose ();
+                    }
+                }
             }
         }
 
