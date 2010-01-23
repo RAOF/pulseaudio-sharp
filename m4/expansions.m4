@@ -48,3 +48,8 @@ AC_DEFUN([SHAMROCK_EXPAND_DATADIR],
 	AC_SUBST(expanded_datadir)
 ])
 
+AC_DEFUN([SHAMROCK_EXPAND_SRCDIR],
+[
+	expanded_srcdir="$(readlink -f $srcdir)"
+	AC_SUBST(expanded_srcdir)
+])
