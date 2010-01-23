@@ -119,6 +119,8 @@ namespace Pulseaudio
         [Test()]
         public void SinkInputCallbackIsCalled ()
         {
+            helper.SpawnAplaySinkInput ();
+
             var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context c = new Context ();
             c.Ready += delegate {
