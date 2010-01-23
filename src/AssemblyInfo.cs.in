@@ -23,10 +23,10 @@ using System.Runtime.CompilerServices;
 // Information about this assembly is defined by the following attributes. 
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle("Do.Interface.Linux")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("PulseAudio#")]
+[assembly: AssemblyDescription("CLI Bindings for the PulseAudio sound server")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("cooperteam.net")]
 [assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
@@ -51,6 +51,6 @@ namespace Pulseaudio
 {
     public static class BuildConfiguration
     {
-        public const string TestDataDir = "@srcdir@/tests";
+        public const string TestDataDir = "@expanded_srcdir@/tests";
     }
 }
