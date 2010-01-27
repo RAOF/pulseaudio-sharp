@@ -95,5 +95,22 @@ namespace Pulseaudio
 
             manager.AddDelegate (CanAddMethodDelegate, manager.NewCookie ());
         }
+
+        [Test]
+        public void CanAddFourParameterCallback ()
+        {
+            UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
+
+            manager.AddDelegate ((int a, IntPtr b, Context c, Sink d) => {}, manager.NewCookie ());
+        }
+
+        [Test]
+        public void AddingSecondCallbackSucceeds ()
+        {
+            UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
+
+            manager.AddDelegate (() => {}, manager.NewCookie ());
+            manager.AddDelegate (() => {}, manager.NewCookie ());
+        }
     }
 }

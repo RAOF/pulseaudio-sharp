@@ -46,6 +46,11 @@ namespace Pulseaudio
             }
         }
 
+        public void AddDelegate<T1, T2, T3, T4> (Action<T1, T2, T3, T4> act, int cookie)
+        {
+            AddDelegate (() => act(default(T1), default(T2), default(T3), default(T4)), cookie);
+        }
+
         public void RemoveDelegate (int cookie)
         {
             if (!delegates.ContainsKey (cookie)) {
@@ -62,16 +67,11 @@ namespace Pulseaudio
 
         public int NewCookie ()
         {
-            int nextCookie;
-            if (delegates.Count () == 0) {
-                if (pendingCookies.Count () == 0) {
-                    nextCookie = 0;
-                } else {
-                    nextCookie = pendingCookies.Max () + 1;
-                }
-            } else {
-                nextCookie = Math.Max (delegates.Keys.Max (), pendingCookies.Max ()) + 1;
-            }
+            int nextCookie, maxDelegateCookie, maxPendingCookie;
+            maxDelegateCookie = delegates.Count () == 0 ? 0 : delegates.Keys.Max ();
+            maxPendingCookie = pendingCookies.Count () == 0 ? 0 : pendingCookies.Max ();
+
+            nextCookie = Math.Max (maxDelegateCookie, maxPendingCookie) + 1;
             pendingCookies.Add (nextCookie);
             return nextCookie;
         }
