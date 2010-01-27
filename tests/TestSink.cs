@@ -155,8 +155,27 @@ namespace Pulseaudio
             Helper.DrainEventLoop ();
             Thread.Sleep (100);
             Helper.DrainEventLoop ();
-            
+
             Assert.AreEqual (vol, volumeTestSink.Volume);
+        }
+
+        [Test]
+        public void TestSinkPropertiesContainsDeviceClass ()
+        {
+            const string testSinkName = "TestSink";
+            helper.AddSink (testSinkName);
+
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            Sink addedSink = null;
+            using (Operation o = c.EnumerateSinks ((Sink s) => { if (s.Name == testSinkName) addedSink = s; })) {
+                o.Wait ();
+            }
+
+            Assert.IsNotNull (addedSink, "Failed to find known sink.");
+
+            Assert.AreEqual ("abstract", addedSink.Properties[Properties.DeviceClass]);
         }
     }
 }

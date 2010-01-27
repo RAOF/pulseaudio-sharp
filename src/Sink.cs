@@ -115,6 +115,12 @@ namespace Pulseaudio
             }
         }
 
+        public PropList Properties {
+            get {
+                return new PropList (proplist);
+            }
+        }
+
         public SinkInfo()
         {
         }
@@ -146,6 +152,7 @@ namespace Pulseaudio
             this.info = info;
             Name = info.Name;
             Description = info.Description;
+            Properties = info.Properties.Copy ();
             context.SinkEvent += HandleRawSinkEvent;
         }
 
@@ -178,6 +185,10 @@ namespace Pulseaudio
             get {
                 return info.volume.Copy ();
             }
+        }
+
+        public PropList Properties {
+            get; private set;
         }
 
         public delegate void VolumeCallback (Volume vol);
