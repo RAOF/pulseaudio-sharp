@@ -393,6 +393,7 @@ namespace Pulseaudio
             }
             handle = new HandleRef (this, listPtr);
             needDispose = false;
+            GC.SuppressFinalize (this);
         }
 
         ~PropList ()
@@ -465,6 +466,7 @@ namespace Pulseaudio
         {
             PropList clone = new PropList (pa_proplist_copy (handle));
             clone.needDispose = true;
+            GC.ReRegisterForFinalize (clone);
             return clone;
         }
 
