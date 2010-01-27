@@ -75,5 +75,17 @@ namespace Pulseaudio
             manager.AddDelegate (()=>{}, manager.NewCookie ());
             Assert.AreNotEqual (oldCallbackCount, manager.PendingCallbackCount);
         }
+
+        [Test]
+        public void RemovingCallbackDecreasesPendingCount ()
+        {
+            UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
+
+            int cookie = manager.NewCookie ();
+            manager.AddDelegate (() => {}, cookie);
+            int oldCallbackCount = manager.PendingCallbackCount;
+            manager.RemoveDelegate (cookie);
+            Assert.Less (manager.PendingCallbackCount, oldCallbackCount);
+        }
     }
 }

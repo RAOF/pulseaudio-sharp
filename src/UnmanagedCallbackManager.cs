@@ -48,7 +48,10 @@ namespace Pulseaudio
 
         public void RemoveDelegate (int cookie)
         {
-            throw new Exception ();
+            if (!delegates.ContainsKey (cookie)) {
+                throw new Exception ();
+            }
+            delegates.Remove (cookie);
         }
 
         public int PendingCallbackCount {
