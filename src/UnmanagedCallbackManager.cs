@@ -51,6 +51,12 @@ namespace Pulseaudio
             throw new Exception ();
         }
 
+        public int PendingCallbackCount {
+            get {
+                return delegates.Count ();
+            }
+        }
+
         public int NewCookie ()
         {
             int nextCookie;
