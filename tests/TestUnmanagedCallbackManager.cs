@@ -73,7 +73,7 @@ namespace Pulseaudio
 
             int oldCallbackCount = manager.PendingCallbackCount;
             manager.AddDelegate (()=>{}, manager.NewCookie ());
-            Assert.AreNotEqual (oldCallbackCount, manager.PendingCallbackCount);
+            Assert.Greater (manager.PendingCallbackCount, oldCallbackCount);
         }
 
         [Test]
