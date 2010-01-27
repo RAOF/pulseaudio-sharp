@@ -27,20 +27,20 @@ namespace Pulseaudio
 {
     public class UnmanagedCallbackManager
     {
-        private List<Action> delegates;
-        private List<int> usedCookies;
+        private Dictionary<int, Action> delegates;
+        private List<int> pendingCookies;
 
         public UnmanagedCallbackManager ()
         {
-            delegates = new List<Action> ();
-            usedCookies = new List<int> ();
+            delegates = new Dictionary<int, Action> ();
+            pendingCookies = new List<int> ();
         }
 
         public void AddDelegate (Action act, int cookie)
         {
-            if (usedCookies.Contains (cookie)) {
-                delegates.Add (act);
-                usedCookies.Remove (cookie);
+            if (pendingCookies.Contains (cookie)) {
+                delegates[cookie] = act;
+                pendingCookies.Remove (cookie);
             } else {
                 throw new Exception ();
             }
@@ -49,12 +49,16 @@ namespace Pulseaudio
         public int NewCookie ()
         {
             int nextCookie;
-            if (usedCookies.Count == 0) {
-                nextCookie = 0;
+            if (delegates.Count () == 0) {
+                if (pendingCookies.Count () == 0) {
+                    nextCookie = 0;
+                } else {
+                    nextCookie = pendingCookies.Max () + 1;
+                }
             } else {
-                nextCookie = usedCookies.Max () + 1;
+                nextCookie = Math.Max (delegates.Keys.Max (), pendingCookies.Max ()) + 1;
             }
-            usedCookies.Add (nextCookie);
+            pendingCookies.Add (nextCookie);
             return nextCookie;
         }
     }
