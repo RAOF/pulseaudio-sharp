@@ -20,16 +20,29 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 namespace Pulseaudio
 {
     public class UnmanagedCallbackManager
     {
+        private List<Action> delegates;
+        private int usedCookies;
+
         public UnmanagedCallbackManager ()
         {
+            delegates = new List<Action> ();
+            usedCookies = 0;
         }
 
         public void AddDelegate (Action act)
-        {}
+        {
+            delegates.Add (act);
+        }
+
+        public int NewCookie ()
+        {
+            return usedCookies++;
+        }
     }
 }

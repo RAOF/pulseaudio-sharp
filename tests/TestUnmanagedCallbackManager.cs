@@ -34,5 +34,13 @@ namespace Pulseaudio
 
             manager.AddDelegate (() => {});
         }
+
+        [Test]
+        public void SuccessiveCookieCallsReturnDifferentCookies ()
+        {
+            UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
+
+            Assert.AreNotEqual (manager.NewCookie (), manager.NewCookie ());
+        }
     }
 }
