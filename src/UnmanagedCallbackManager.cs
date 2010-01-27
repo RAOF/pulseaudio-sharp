@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace Pulseaudio
 {
-    public class UnmanagedCallbackManager
+    internal class UnmanagedCallbackManager
     {
         private Dictionary<int, Action> delegates;
         private List<int> pendingCookies;
