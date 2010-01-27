@@ -32,7 +32,7 @@ namespace Pulseaudio
         {
             UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
 
-            manager.AddDelegate (() => {});
+            manager.AddDelegate (() => {}, manager.NewCookie ());
         }
 
         [Test]
@@ -41,6 +41,17 @@ namespace Pulseaudio
             UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
 
             Assert.AreNotEqual (manager.NewCookie (), manager.NewCookie ());
+        }
+
+        [Test]
+        [ExpectedException (ExceptionType = typeof(System.Exception))]
+        public void AddingTwoCallbacksWithTheSameCookieIsAnError ()
+        {
+            UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
+
+            int cookie = manager.NewCookie ();
+            manager.AddDelegate (() => {}, cookie);
+            manager.AddDelegate (() => {}, cookie);
         }
     }
 }

@@ -20,6 +20,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Pulseaudio
@@ -27,22 +28,34 @@ namespace Pulseaudio
     public class UnmanagedCallbackManager
     {
         private List<Action> delegates;
-        private int usedCookies;
+        private List<int> usedCookies;
 
         public UnmanagedCallbackManager ()
         {
             delegates = new List<Action> ();
-            usedCookies = 0;
+            usedCookies = new List<int> ();
         }
 
-        public void AddDelegate (Action act)
+        public void AddDelegate (Action act, int cookie)
         {
-            delegates.Add (act);
+            if (usedCookies.Contains (cookie)) {
+                delegates.Add (act);
+                usedCookies.Remove (cookie);
+            } else {
+                throw new Exception ();
+            }
         }
 
         public int NewCookie ()
         {
-            return usedCookies++;
+            int nextCookie;
+            if (usedCookies.Count == 0) {
+                nextCookie = 0;
+            } else {
+                nextCookie = usedCookies.Max () + 1;
+            }
+            usedCookies.Add (nextCookie);
+            return nextCookie;
         }
     }
 }
