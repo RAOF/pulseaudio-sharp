@@ -46,7 +46,7 @@ namespace Pulseaudio
             }
         }
 
-       public void RemoveDelegate (int cookie)
+        public void RemoveDelegate (int cookie)
         {
             throw new Exception ();
         }
