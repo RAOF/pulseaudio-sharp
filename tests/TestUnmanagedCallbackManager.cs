@@ -53,5 +53,17 @@ namespace Pulseaudio
             manager.AddDelegate (() => {}, cookie);
             manager.AddDelegate (() => {}, cookie);
         }
+
+        [Test]
+        [ExpectedException (ExceptionType = typeof (System.Exception))]
+        public void RemovingCallbackTwiceIsAnError ()
+        {
+            UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
+
+            int cookie = manager.NewCookie ();
+            manager.AddDelegate (() => {}, cookie);
+            manager.RemoveDelegate (cookie);
+            manager.RemoveDelegate (cookie);
+        }
     }
 }
