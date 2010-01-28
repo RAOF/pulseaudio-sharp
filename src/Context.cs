@@ -47,9 +47,11 @@ namespace Pulseaudio
     public class Context : IDisposable
     {
         private bool disposed = false;
-        HandleRef context;
-        MainLoop loop;
+        private HandleRef context;
+        private MainLoop loop;
         private UnmanagedCallbackManager cbManager;
+        private ContextNotifyCB notifyCB;
+        private SubscriptionEventCB eventCB;
 
         public delegate void ConnectionStateHandler ();
 
@@ -101,8 +103,10 @@ namespace Pulseaudio
             loop = new GLibMainLoop ();
             GC.SuppressFinalize (loop);
             context = new HandleRef (this, pa_context_new (loop.GetAPI (), clientName));
-            pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
-            pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
+            notifyCB = ContextNotifyHandler;
+            pa_context_set_state_callback (context, notifyCB, new IntPtr (0));
+            eventCB = SubscriptionEventHandler;
+            pa_context_set_subscribe_callback (context, eventCB, IntPtr.Zero);
         }
 
         public void Connect ()
