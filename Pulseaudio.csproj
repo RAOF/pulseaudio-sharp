@@ -38,7 +38,9 @@
       <SpecificVersion>False</SpecificVersion>
       <Package>nunit-2.4</Package>
     </Reference>
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>glib-sharp-2.0</Package>
+    </Reference>
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
@@ -66,6 +68,8 @@
     <Compile Include="src\ServerInfo.cs" />
     <Compile Include="tests\TestSinkInput.cs" />
     <Compile Include="tests\Helper.cs" />
+    <Compile Include="tests\TestUnmanagedCallbackManager.cs" />
+    <Compile Include="src\UnmanagedCallbackManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

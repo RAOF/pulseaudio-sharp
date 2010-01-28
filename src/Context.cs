@@ -47,8 +47,11 @@ namespace Pulseaudio
     public class Context : IDisposable
     {
         private bool disposed = false;
-        HandleRef context;
-        MainLoop loop;
+        private HandleRef context;
+        private MainLoop loop;
+        private UnmanagedCallbackManager cbManager;
+        private ContextNotifyCB notifyCB;
+        private SubscriptionEventCB eventCB;
 
         public delegate void ConnectionStateHandler ();
 
@@ -96,11 +99,14 @@ namespace Pulseaudio
 
         private void Init (string clientName)
         {
+            cbManager = new UnmanagedCallbackManager ();
             loop = new GLibMainLoop ();
             GC.SuppressFinalize (loop);
             context = new HandleRef (this, pa_context_new (loop.GetAPI (), clientName));
-            pa_context_set_state_callback (context, ContextNotifyHandler, new IntPtr (0));
-            pa_context_set_subscribe_callback (context, SubscriptionEventHandler, IntPtr.Zero);
+            notifyCB = ContextNotifyHandler;
+            pa_context_set_state_callback (context, notifyCB, new IntPtr (0));
+            eventCB = SubscriptionEventHandler;
+            pa_context_set_subscribe_callback (context, eventCB, IntPtr.Zero);
         }
 
         public void Connect ()
@@ -174,12 +180,16 @@ namespace Pulseaudio
 
         public Operation EnumerateSinkInputs (SinkInputCallback cb)
         {
-            var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) =>
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, NativeSinkInputInfo, int, IntPtr> wrapped_cb = (IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) =>
             {
                 if (eol == 0) {
                     cb (new SinkInput (info, this), eol);
+                } else {
+                    cbManager.RemoveDelegate (cookie);
                 }
-            });
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             return new Operation (pa_context_get_sink_input_info_list (context, wrapped_cb, IntPtr.Zero));
         }
 
@@ -188,9 +198,14 @@ namespace Pulseaudio
 
         internal Operation EnumerateSinks (SinkInfoCallback cb)
         {
-            var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, SinkInfo, int, IntPtr> wrapped_cb = (IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
-            });
+                if (eol != 0) {
+                    cbManager.RemoveDelegate (cookie);
+                }
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             try {
                 return new Operation (pa_context_get_sink_info_list (context, wrapped_cb, IntPtr.Zero));
             } catch (ArgumentNullException) {
@@ -200,7 +215,6 @@ namespace Pulseaudio
 
         internal delegate void SinkInfoCallback (SinkInfo info, int eol);
         private delegate void pa_sink_info_cb (IntPtr context, SinkInfo info, int eol, IntPtr userdata);
-
 
         public Operation EnumerateSinks (SinkCallback cb)
         {
@@ -215,9 +229,11 @@ namespace Pulseaudio
 
         internal Operation GetSinkInfoByIndex (UInt32 index, SinkInfoCallback cb)
         {
-            var wrapped_cb = new pa_sink_info_cb ((IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, SinkInfo, int, IntPtr> wrapped_cb = (IntPtr c, SinkInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
-            });
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             try {
                 return new Operation (pa_context_get_sink_info_by_index (context, index, wrapped_cb, IntPtr.Zero));
             } catch (ArgumentNullException) {
@@ -225,14 +241,28 @@ namespace Pulseaudio
             }
         }
 
+        internal Operation GetSinkInfoByIndex (UInt32 index, Action<IntPtr, SinkInfo, int, IntPtr> cb)
+        {
+            try {
+                return new Operation (pa_context_get_sink_info_by_index (context, index, cb, IntPtr.Zero));
+            } catch (ArgumentNullException) {
+                throw new Exception (String.Format ("Error getting SinkInfo for index {0}: {1}", index, LastError.Message));
+            }
+        }
+
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_get_sink_info_by_index (HandleRef context, UInt32 index, pa_sink_info_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_get_sink_info_by_index (HandleRef context,
+                                                                        UInt32 index,
+                                                                        Action<IntPtr, SinkInfo, int, IntPtr> cb,
+                                                                        IntPtr userdata);
 
         internal Operation GetSinkInputInfoByIndex (UInt32 index, NativeSinkInputInfoCallback cb)
         {
-            var wrapped_cb = new pa_sink_input_info_cb ((IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) => {
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, NativeSinkInputInfo, int, IntPtr> wrapped_cb = (IntPtr c, NativeSinkInputInfo info, int eol, IntPtr userdata) => {
                 cb (info, eol);
-            });
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             try {
                 return new Operation (pa_context_get_sink_input_info (context, index, wrapped_cb, IntPtr.Zero));
             } catch (ArgumentNullException) {
@@ -242,13 +272,18 @@ namespace Pulseaudio
 
         internal delegate void NativeSinkInputInfoCallback (NativeSinkInputInfo info, int eol);
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_get_sink_input_info (HandleRef context, UInt32 index, pa_sink_input_info_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_get_sink_input_info (HandleRef context,
+                                                                     UInt32 index,
+                                                                     Action<IntPtr, NativeSinkInputInfo, int, IntPtr> cb,
+                                                                     IntPtr userdata);
 
         public Operation SetSinkVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
         {
-            var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => {
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, int, IntPtr> wrapped_cb = (IntPtr context, int success, IntPtr userdata) => {
                 cb (success);
-            });
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             try {
                 return new Operation (pa_context_set_sink_volume_by_index (context,
                                                                            index,
@@ -260,13 +295,20 @@ namespace Pulseaudio
             }
         }
         [DllImport("pulse")]
-        private static extern IntPtr pa_context_set_sink_volume_by_index(HandleRef context, UInt32 idx, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_set_sink_volume_by_index(HandleRef context,
+                                                                         UInt32 idx,
+                                                                         Volume vol,
+                                                                         Action<IntPtr, int, IntPtr> cb,
+                                                                         IntPtr userdata);
 
         public Operation SetSinkInputVolume (UInt32 index, Volume vol, OperationSuccessCallback cb)
         {
-            var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => {
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, int, IntPtr> wrapped_cb = (IntPtr context, int success, IntPtr userdata) => {
                 cb (success);
-            });
+                cbManager.RemoveDelegate (cookie);
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             try {
                 return new Operation (pa_context_set_sink_input_volume (context,
                         index,
@@ -278,12 +320,17 @@ namespace Pulseaudio
             }
         }
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_set_sink_input_volume (HandleRef context, UInt32 index, Volume vol, pa_context_success_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_set_sink_input_volume (HandleRef context, UInt32 index, Volume vol, Action<IntPtr, int, IntPtr> cb, IntPtr userdata);
 
 
         public Operation MoveSinkInputByIndex (UInt32 sinkInputIndex, UInt32 sinkIndex, OperationSuccessCallback cb)
         {
-            var wrapped_cb = new pa_context_success_cb ((IntPtr context, int success, IntPtr userdata) => cb (success));
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, int, IntPtr> wrapped_cb = (IntPtr context, int success, IntPtr userdata) => {
+                cb (success);
+                cbManager.RemoveDelegate (cookie);
+            };
+            cbManager.AddDelegate (wrapped_cb, cookie);
             try {
                 return new Operation (pa_context_move_sink_input_by_index (context,
                         sinkInputIndex,
@@ -295,7 +342,7 @@ namespace Pulseaudio
             }
         }
         [DllImport ("pulse")]
-        private static extern IntPtr pa_context_move_sink_input_by_index (HandleRef context, UInt32 sinkInputIndex, UInt32 sinkIndex, pa_context_success_cb cb, IntPtr userdata);
+        private static extern IntPtr pa_context_move_sink_input_by_index (HandleRef context, UInt32 sinkInputIndex, UInt32 sinkIndex, Action<IntPtr, int, IntPtr> cb, IntPtr userdata);
 
         public delegate void OperationSuccessCallback (int success);
         private delegate void pa_context_success_cb (IntPtr context, int success, IntPtr userdata);
@@ -316,11 +363,11 @@ namespace Pulseaudio
 
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_get_sink_input_info_list (HandleRef context,
-                                                                          pa_sink_input_info_cb cb,
+                                                                          Action<IntPtr, NativeSinkInputInfo, int, IntPtr> cb,
                                                                           IntPtr userdata);
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_get_sink_info_list (HandleRef context,
-                                                                    pa_sink_info_cb cb,
+                                                                    Action<IntPtr, SinkInfo, int, IntPtr> cb,
                                                                     IntPtr userdata);
         [DllImport ("pulse")]
         private static extern void pa_context_unref (HandleRef context);
@@ -331,11 +378,16 @@ namespace Pulseaudio
         private delegate void pa_server_info_cb (IntPtr context, NativeServerInfo info, IntPtr userdata);
         [DllImport ("pulse")]
         private static extern IntPtr pa_context_get_server_info (HandleRef context,
-                                                                 pa_server_info_cb cb,
+                                                                 Action<IntPtr, NativeServerInfo, IntPtr> cb,
                                                                  IntPtr userdata);
         public Operation GetServerInfo (ServerInfoCallback cb)
         {
-            pa_server_info_cb wrappedCallback = (_, info, __) => { cb (new ServerInfo (info)); };
+            int cookie = cbManager.NewCookie ();
+            Action<IntPtr, NativeServerInfo, IntPtr> wrappedCallback = (_, info, __) => {
+                cb (new ServerInfo (info));
+                cbManager.RemoveDelegate (cookie);
+            };
+            cbManager.AddDelegate (wrappedCallback, cookie);
             Operation opn;
             try {
                 opn = new Operation (pa_context_get_server_info (context, wrappedCallback, IntPtr.Zero));
