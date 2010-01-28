@@ -51,6 +51,11 @@ namespace Pulseaudio
             AddDelegate (() => act(default(T1), default(T2), default(T3), default(T4)), cookie);
         }
 
+        public void AddDelegate<T1, T2, T3> (Action<T1, T2, T3> act, int cookie)
+        {
+            AddDelegate (() => act(default (T1), default (T2), default (T3)), cookie);
+        }
+
         public void RemoveDelegate (int cookie)
         {
             if (!delegates.ContainsKey (cookie)) {
