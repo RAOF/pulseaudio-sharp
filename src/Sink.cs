@@ -197,7 +197,7 @@ namespace Pulseaudio
 
         public SampleSpec SampleSpec {
             get {
-                //SampleSpec is a struct, so this passes a copy.
+                //SampleSpec is a struct, so this returns a copy.
                 return info.sample_spec;
             }
         }
