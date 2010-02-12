@@ -140,6 +140,8 @@ namespace Pulseaudio
             }
             info = i;
             Description = i.Description;
+            MonitorSourceName = i.MonitorSourceName;
+            Driver = i.Driver;
         }
 
         private bool disposed = false;
@@ -152,6 +154,8 @@ namespace Pulseaudio
             this.info = info;
             Name = info.Name;
             Description = info.Description;
+            MonitorSourceName = info.MonitorSourceName;
+            Driver = info.Driver;
             Properties = info.Properties.Copy ();
             context.SinkEvent += HandleRawSinkEvent;
         }
@@ -181,14 +185,101 @@ namespace Pulseaudio
             get; private set;
         }
 
+        public PropList Properties {
+            get; private set;
+        }
+
+        public UInt32 Index {
+            get {
+                return info.index;
+            }
+        }
+
+        public SampleSpec SampleSpec {
+            get {
+                //SampleSpec is a struct, so this passes a copy.
+                return info.sample_spec;
+            }
+        }
+
+        public ChannelMap ChannelMap {
+            get {
+                //ChannelMap is a struct, so this returns a copy.
+                return info.channel_map;
+            }
+        }
+        public UInt32 OwnerModule {
+            get {
+                return info.owner_module;
+            }
+        }
+
         public Volume Volume {
             get {
                 return info.volume.Copy ();
             }
         }
 
-        public PropList Properties {
+        public int Mute {
+            get {
+                return info.mute;
+            }
+        }
+
+        public UInt32 MonitorSource {
+            get {
+                return info.monitor_source;
+            }
+        }
+
+        public string MonitorSourceName {
             get; private set;
+        }
+
+        public UInt64 Latency {
+            get {
+                return info.latency;
+            }
+        }
+
+        public string Driver {
+            get; private set;
+        }
+
+        public SinkFlags Flags {
+            get {
+                return info.flags;
+            }
+        }
+
+        public UInt64 ConfiguredLatency {
+            get {
+                return info.configured_latency;
+            }
+        }
+
+        public UInt32 BaseVolume {
+            get {
+                return info.base_volume;
+            }
+        }
+
+        public SinkState State {
+            get {
+                return info.state;
+            }
+        }
+
+        public UInt32 NumVolumeSteps {
+            get {
+                return info.n_volume_steps;
+            }
+        }
+
+        public UInt32 Card {
+            get {
+                return info.card;
+            }
         }
 
         public delegate void VolumeCallback (Volume vol);

@@ -177,5 +177,45 @@ namespace Pulseaudio
 
             Assert.AreEqual ("abstract", addedSink.Properties[Properties.DeviceClass]);
         }
+
+        [Test]
+        public void SinkChannelMapPropertyReturnsCopy ()
+        {
+            const string testSinkName = "TestSink";
+            helper.AddSink (testSinkName);
+
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            Sink addedSink = null;
+            using (Operation o = c.EnumerateSinks ((Sink s) => { if (s.Name == testSinkName) addedSink = s; })) {
+                o.Wait ();
+            }
+            Assert.IsNotNull (addedSink);
+
+            ChannelMap sinkMap = addedSink.ChannelMap;
+            sinkMap.channels++;
+            Assert.AreNotEqual (addedSink.ChannelMap.channels, sinkMap.channels);
+        }
+
+                [Test]
+        public void SinkSampleMapPropertyReturnsCopy ()
+        {
+            const string testSinkName = "TestSink";
+            helper.AddSink (testSinkName);
+
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            Sink addedSink = null;
+            using (Operation o = c.EnumerateSinks ((Sink s) => { if (s.Name == testSinkName) addedSink = s; })) {
+                o.Wait ();
+            }
+            Assert.IsNotNull (addedSink);
+
+            SampleSpec sinkSample = addedSink.SampleSpec;
+            sinkSample.rate++;
+            Assert.AreNotEqual (addedSink.SampleSpec.rate, sinkSample.rate);
+        }
     }
 }
