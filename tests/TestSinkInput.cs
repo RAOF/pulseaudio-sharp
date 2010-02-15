@@ -168,5 +168,62 @@ namespace Pulseaudio
 
             Helper.RunUntilEventSignal (() => {;}, volumeChangedEventTriggered, "Timeout waiting for VolumeChanged signal");
         }
+
+        [Test]
+        public void MoveToSinkChangesSink ()
+        {
+            string sinkNameA = "TestSinkDestinationA";
+            string sinkNameB = "TestSinkDestinationB";
+            helper.AddSink (sinkNameA);
+            helper.AddSink (sinkNameB);
+
+            Context c = new Context ();
+            c.ConnectAndWait ();
+
+            Sink destinationA = null;
+            Sink destinationB = null;
+            using (Operation o = c.EnumerateSinks ((Sink s) => {
+                if (s.Name == sinkNameA) {
+                    destinationA = s;
+                } else if (s.Name == sinkNameB) {
+                    destinationB = s;
+                }
+            })) {
+                o.Wait ();
+            }
+            Assert.IsNotNull (destinationA);
+            Assert.IsNotNull (destinationB);
+
+            helper.SpawnAplaySinkInput ();
+
+            SinkInput aplay = null;
+            using (Operation opn = c.EnumerateSinkInputs ((SinkInput input, int eol) => {
+                if (eol == 0) {
+                    if (input.Properties[Properties.ApplicationProcessBinary] == "aplay") {
+                        aplay = input;
+                    }
+                }
+            })) {
+                opn.Wait ();
+            }
+            Assert.IsNotNull (aplay, "Testing error: aplay SinkInput not found");
+
+            AutoResetEvent propertiesChanged = new AutoResetEvent (false);
+            aplay.PropertiesChanged += delegate(object sender, SinkInput.PropertyChangedEventArgs e) {
+                propertiesChanged.Set ();
+            };
+
+            using (Operation o = aplay.MoveTo (destinationA, (_) => {;})) {
+                o.Wait ();
+            }
+            Helper.RunUntilEventSignal (() => {;}, propertiesChanged, "Timeout waiting for first sink change");
+            Assert.AreEqual (destinationA.Index, aplay.Sink, "Failed to move stream to first sink");
+
+            using (Operation o = aplay.MoveTo (destinationB, (_) => {;})) {
+                o.Wait ();
+            }
+            Helper.RunUntilEventSignal (() => {;}, propertiesChanged, "Timeout waiting for second sink change");
+            Assert.AreEqual (destinationB.Index, aplay.Sink, "Failed to move stream to second sink");
+        }
     }
 }

@@ -131,6 +131,11 @@ namespace Pulseaudio
             return ctx.SetSinkInputVolume (Index, v, cb);
         }
 
+        public Operation MoveTo (Sink s, Context.OperationSuccessCallback cb)
+        {
+            return ctx.MoveSinkInputByIndex (Index, s.Index, cb);
+        }
+
         public class VolumeChangedEventArgs : EventArgs
         {
             public VolumeChangedEventArgs (Volume vol)
@@ -156,8 +161,19 @@ namespace Pulseaudio
             }
         }
 
+        public class PropertyChangedEventArgs : EventArgs
+        {
+        }
+
+        public event EventHandler<PropertyChangedEventArgs> PropertiesChanged;
+
         private void UpdateInfo (NativeSinkInputInfo info)
         {
+            EventHandler<PropertyChangedEventArgs> propHandler;
+            propHandler = PropertiesChanged;
+            if (propHandler != null) {
+                propHandler (this, new PropertyChangedEventArgs ());
+            }
             if (this.info.volume != info.volume) {
                 EventHandler<VolumeChangedEventArgs> handler;
                 handler = VolumeChanged;
