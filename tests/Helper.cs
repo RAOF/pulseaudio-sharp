@@ -54,7 +54,32 @@ namespace Pulseaudio
         /// <param name="description">
         /// A <see cref="System.String"/>.  Description of the sink that will be added.
         /// </param>
-        public void AddSink (string name, string description)
+        /// <returns>
+        /// The <see cref="PulseAudio.Sink"/> matching the added sink.
+        /// </returns>
+        public Sink AddSink (Context constructOn, string name, string description)
+        {
+            int moduleNumber = AddSink (name, description);
+
+            Sink addedSink = null;
+            using (Operation o = constructOn.EnumerateSinks ((Sink s) => { if (s.OwnerModule == moduleNumber) addedSink = s; })) {
+                o.Wait ();
+            }
+            Assert.IsNotNull (addedSink, "Failed to find added test sink.");
+            return addedSink;
+        }
+
+        public Sink AddSink (Context constructOn, string name)
+        {
+            return AddSink (constructOn, name, "Null sink, no description added");
+        }
+
+        public int AddSink (string name)
+        {
+            return AddSink (name, "Null sink, no description added");
+        }
+
+        public int AddSink (string name, string description)
         {
             string cmdLineOpts = String.Format ("load-module module-null-sink sink_name=\\\"{0}\\\" sink_properties=\\\"device.description=\\\\\\\"{1}\\\\\\\"\\\"", name, description);
             ProcessStartInfo pactlInfo = new ProcessStartInfo ("/usr/bin/pactl", cmdLineOpts);
@@ -67,12 +92,9 @@ namespace Pulseaudio
             if (pactl.ExitCode != 0) {
                 throw new Exception (String.Format ("Unable to add sink to pulseaudio instance.  Return code: {0}", pactl.ExitCode));
             }
-            modulesLoaded.Add (int.Parse (pactl.StandardOutput.ReadLine ()));
-        }
-
-        public void AddSink (string name)
-        {
-            AddSink (name, "Null sink, no description added");
+            int moduleNumber = int.Parse (pactl.StandardOutput.ReadLine ());
+            modulesLoaded.Add (moduleNumber);
+            return moduleNumber;
         }
 
         public void SpawnAplaySinkInput ()

@@ -50,9 +50,9 @@ namespace Pulseaudio
         public void TestGetName ()
         {
             string sinkDescription = "Just some description string";
-            helper.AddSink ("Test sink", sinkDescription);
             Context c = new Context ();
             c.ConnectAndWait ();
+            helper.AddSink (c, "Test sink", sinkDescription).Dispose ();
             var sinks = new List<Sink> ();
             using (Operation o = c.EnumerateSinks ((Sink s) => sinks.Add (s))) {
                 o.Wait ();
@@ -63,18 +63,13 @@ namespace Pulseaudio
         [Test()]
         public void TestVolumeChangedCallbackRuns ()
         {
-            string testSinkName = "VolumeChangeTestSink";
-            helper.AddSink (testSinkName);
             Context c = new Context ();
             c.ConnectAndWait ();
 
+            Sink volumeTestSink = helper.AddSink (c, "VolumeTestSink");
+
             ManualResetEvent callbackTriggered = new ManualResetEvent (false);
 
-            var sinks = new List<Sink> ();
-            using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
-                o.Wait ();
-            }
-            Sink volumeTestSink = sinks.First ((Sink s) => s.Name == testSinkName);
             volumeTestSink.VolumeChanged += (_, __) => {
                 callbackTriggered.Set ();
             };
@@ -95,13 +90,7 @@ namespace Pulseaudio
             Context c = new Context ();
             c.ConnectAndWait ();
 
-            helper.AddSink ("dispose_test_sink");
-
-            var sinks = new List<Sink> ();
-            using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
-                o.Wait ();
-            }
-            Sink testSink = sinks.Where ((Sink s) => s.Name == "dispose_test_sink").First ();
+            Sink testSink = helper.AddSink (c, "dispose_test_sink");
 
             testSink.VolumeChanged += delegate(object sender, Sink.VolumeChangedEventArgs e) {
                 Assert.Fail ("VolumeChanged callback run after Sink was disposed");
@@ -111,7 +100,7 @@ namespace Pulseaudio
             testSink.Dispose ();
 
             // Find the sink again...
-            sinks.Clear ();
+            List<Sink> sinks = new List<Sink> ();
             using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
                 o.Wait ();
             }
@@ -131,16 +120,10 @@ namespace Pulseaudio
         [Test]
         public void VolumePropertyUpdatedWithVolumeChange ()
         {
-            string testSinkName = "VolumeChangeTestSink";
-            helper.AddSink (testSinkName);
             Context c = new Context ();
             c.ConnectAndWait ();
 
-            var sinks = new List<Sink> ();
-            using (Operation o = c.EnumerateSinks ((Sink sink) => sinks.Add (sink))) {
-                o.Wait ();
-            }
-            Sink volumeTestSink = sinks.First ((Sink s) => s.Name == testSinkName);
+            Sink volumeTestSink = helper.AddSink (c, "VolumeTestSink");
 
             Volume vol = volumeTestSink.Volume;
             vol.Modify (0.1);
@@ -162,18 +145,10 @@ namespace Pulseaudio
         [Test]
         public void TestSinkPropertiesContainsDeviceClass ()
         {
-            const string testSinkName = "TestSink";
-            helper.AddSink (testSinkName);
-
             Context c = new Context ();
             c.ConnectAndWait ();
 
-            Sink addedSink = null;
-            using (Operation o = c.EnumerateSinks ((Sink s) => { if (s.Name == testSinkName) addedSink = s; })) {
-                o.Wait ();
-            }
-
-            Assert.IsNotNull (addedSink, "Failed to find known sink.");
+            Sink addedSink = helper.AddSink (c, "PropertyTestSink");
 
             Assert.AreEqual ("abstract", addedSink.Properties[Properties.DeviceClass]);
         }
@@ -181,37 +156,23 @@ namespace Pulseaudio
         [Test]
         public void SinkChannelMapPropertyReturnsCopy ()
         {
-            const string testSinkName = "TestSink";
-            helper.AddSink (testSinkName);
-
             Context c = new Context ();
             c.ConnectAndWait ();
 
-            Sink addedSink = null;
-            using (Operation o = c.EnumerateSinks ((Sink s) => { if (s.Name == testSinkName) addedSink = s; })) {
-                o.Wait ();
-            }
-            Assert.IsNotNull (addedSink);
+            Sink addedSink = helper.AddSink (c, "ChannelMapTestSink");
 
             ChannelMap sinkMap = addedSink.ChannelMap;
             sinkMap.channels++;
             Assert.AreNotEqual (addedSink.ChannelMap.channels, sinkMap.channels);
         }
 
-                [Test]
+        [Test]
         public void SinkSampleMapPropertyReturnsCopy ()
         {
-            const string testSinkName = "TestSink";
-            helper.AddSink (testSinkName);
-
             Context c = new Context ();
             c.ConnectAndWait ();
 
-            Sink addedSink = null;
-            using (Operation o = c.EnumerateSinks ((Sink s) => { if (s.Name == testSinkName) addedSink = s; })) {
-                o.Wait ();
-            }
-            Assert.IsNotNull (addedSink);
+            Sink addedSink = helper.AddSink (c, "SampleMapHelpTestSink");
 
             SampleSpec sinkSample = addedSink.SampleSpec;
             sinkSample.rate++;
