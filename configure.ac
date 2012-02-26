@@ -42,7 +42,6 @@ AC_SUBST([GLIB_SHARP_20_LIBS])
 AC_CONFIG_FILES([
 	Makefile
 	pulseaudio-sharp-$VERSION.pc
-	src/AssemblyInfo.cs
 ])
 
 AC_OUTPUT
