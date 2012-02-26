@@ -110,7 +110,7 @@ namespace Pulseaudio
                 o.Wait ();
             }
             vol.Modify (0.5);
-            using (Operation o = testSink.SetVolume (vol, (o) => {;})) {
+            using (Operation o = testSink.SetVolume (vol, delegate {})) {
                 o.Wait ();
             }
             //Flush the mainloop
