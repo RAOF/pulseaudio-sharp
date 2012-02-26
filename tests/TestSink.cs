@@ -49,10 +49,10 @@ namespace Pulseaudio
         [Test()]
         public void TestGetName ()
         {
-            string sinkDescription = "Just some description string";
+            string sinkDescription = "Just_some_description_string";
             Context c = new Context ();
             c.ConnectAndWait ();
-            helper.AddSink (c, "Test sink", sinkDescription).Dispose ();
+            helper.AddSink (c, "Test_sink", sinkDescription).Dispose ();
             var sinks = new List<Sink> ();
             using (Operation o = c.EnumerateSinks ((Sink s) => sinks.Add (s))) {
                 o.Wait ();

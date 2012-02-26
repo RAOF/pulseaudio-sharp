@@ -205,7 +205,7 @@ namespace Pulseaudio
         [Test()]
         public void SinkInfoContainsKnownDescription ()
         {
-            helper.AddSink ("Test Sink", "Test Description");
+            helper.AddSink ("Test_Sink", "Test_Description");
             var callback_called = new EventWaitHandle (false, EventResetMode.AutoReset);
             Context c = new Context ();
             List<string> sink_descriptions = new List<string> ();
@@ -214,7 +214,7 @@ namespace Pulseaudio
                     if (eol == 0) {
                         sink_descriptions.Add (info.Description);
                     } else {
-                        Assert.Contains ("Test Description", sink_descriptions);
+                        Assert.Contains ("Test_Description", sink_descriptions);
                         callback_called.Set ();
                     }
                 });
@@ -341,7 +341,7 @@ namespace Pulseaudio
             };
             Helper.DrainEventLoop ();
 
-            helper.AddSink ("Test sink");
+            helper.AddSink ("Test_sink");
 
             Helper.RunUntilEventSignal (() => {;}, eventTriggered, "Timeout waiting for new sink event");
         }
@@ -351,7 +351,7 @@ namespace Pulseaudio
         {
             Context c = new Context ();
             c.ConnectAndWait ();
-            helper.AddSink ("Test sink");
+            helper.AddSink ("Test_sink");
 
             var eventTriggered = new ManualResetEvent (false);
 

@@ -71,17 +71,21 @@ namespace Pulseaudio
 
         public Sink AddSink (Context constructOn, string name)
         {
-            return AddSink (constructOn, name, "Null sink, no description added");
+            return AddSink (constructOn, name, "testing_null_sink");
         }
 
         public int AddSink (string name)
         {
-            return AddSink (name, "Null sink, no description added");
+            return AddSink (name, "testing_null_sink");
         }
 
         public int AddSink (string name, string description)
         {
-            string cmdLineOpts = String.Format ("load-module module-null-sink sink_name=\\\"{0}\\\" sink_properties=\\\"device.description=\\\\\\\"{1}\\\\\\\"\\\"", name, description);
+            if (name.Contains (" ") || description.Contains (" ")) {
+                Assert.Fail ("Sink names or descriptions must not contain spaces.");
+            }
+
+            string cmdLineOpts = String.Format ("load-module module-null-sink sink_name={0} sink_properties=device.description={1}", name, description);
             ProcessStartInfo pactlInfo = new ProcessStartInfo ("/usr/bin/pactl", cmdLineOpts);
             pactlInfo.RedirectStandardOutput = true;
             pactlInfo.UseShellExecute = false;
