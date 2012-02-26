@@ -44,7 +44,7 @@ namespace Pulseaudio
         }
 
         [Test]
-        [ExpectedException (ExceptionType = typeof(System.Exception))]
+        [ExpectedException (typeof(System.Exception))]
         public void AddingTwoCallbacksWithTheSameCookieIsAnError ()
         {
             UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
@@ -55,7 +55,7 @@ namespace Pulseaudio
         }
 
         [Test]
-        [ExpectedException (ExceptionType = typeof (System.Exception))]
+        [ExpectedException (typeof (System.Exception))]
         public void RemovingCallbackTwiceIsAnError ()
         {
             UnmanagedCallbackManager manager = new UnmanagedCallbackManager ();
