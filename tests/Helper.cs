@@ -114,7 +114,9 @@ namespace Pulseaudio
             ctx.SinkInputEvent += eventHandler;
             Helper.DrainEventLoop ();
 
-            string testAudioFile = Path.Combine (Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location), "tests", "15seconds.wav");
+            Uri assemblyLocation = new Uri (Assembly.GetExecutingAssembly ().CodeBase);
+            Assert.True (assemblyLocation.IsFile, "Unable to find assembly location, unable to load test data");
+            string testAudioFile = Path.Combine (Path.GetDirectoryName (assemblyLocation.LocalPath), "tests", "15seconds.wav");
 
             ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", testAudioFile);
             p.RedirectStandardOutput = true;
