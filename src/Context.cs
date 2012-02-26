@@ -290,7 +290,7 @@ namespace Pulseaudio
                                                                            vol,
                                                                            wrapped_cb,
                                                                            IntPtr.Zero));
-            } catch (ArgumentNullException e) {
+            } catch (ArgumentNullException) {
                 throw new Exception (String.Format ("Error setting sink volume: {0}", LastError.Message));
             }
         }
