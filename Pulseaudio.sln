@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pulseaudio", "Pulseaudio.csproj", "{5A3B36B1-5C96-4A5E-9D89-32CBD1634EC0}"
 EndProject
 Global
@@ -22,7 +22,7 @@ Global
 		$1.ResourceNamePolicy = FileName
 		$0.StandardHeader = $2
 		$2.Text = @ \n Copyright © ${Year} ${CopyrightHolder}\n\n ${Filename} is a part of Pulseaudio#\n\n Pulseaudio# is free software: you can redistribute it and/or modify\n it under the terms of the GNU Lesser General Public License as published by\n the Free Software Foundation, either version 3 of the License, or\n (at your option) any later version.\n\n Pulseaudio# is distributed in the hope that it will be useful,\n but WITHOUT ANY WARRANTY; without even the implied warranty of\n MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n GNU Lesser General Public License for more details.\n\n You should have received a copy of the GNU Lesser General Public License\n along with Pulseaudio#.  If not, see <http://www.gnu.org/licenses/>.\n
-		$2.inheritsSet = MITX11License
+		$2.IncludeInNewFiles = True
 		$0.TextStylePolicy = $3
 		$3.FileWidth = 120
 		$3.RemoveTrailingWhitespace = True
