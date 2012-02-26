@@ -92,5 +92,8 @@
   <ItemGroup>
     <None Include="configure.ac" />
     <None Include="Makefile.am" />
+    <None Include="tests\15seconds.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

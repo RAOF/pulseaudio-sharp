@@ -23,6 +23,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Reflection;
+using System.IO;
 using g = GLib;
 using NUnit.Framework;
 
@@ -112,7 +114,9 @@ namespace Pulseaudio
             ctx.SinkInputEvent += eventHandler;
             Helper.DrainEventLoop ();
 
-            ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", System.IO.Path.Combine (BuildConfiguration.TestDataDir, "15seconds.wav"));
+            string testAudioFile = Path.Combine (Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location), "tests", "15seconds.wav");
+
+            ProcessStartInfo p = new ProcessStartInfo ("/usr/bin/aplay", testAudioFile);
             p.RedirectStandardOutput = true;
             p.RedirectStandardError = true;
             p.UseShellExecute = false;
