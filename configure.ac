@@ -3,9 +3,9 @@ AC_PREREQ([2.54])
 
 AC_INIT([[PulseAudio#]],
 	[0.1], 
-	[https://bugs.edge.launchpad.net/pulseaudio-sharp/+filebug],
+	[https://github.com/RAOF/pulseaudio-sharp/issues],
 	[pulseaudio-sharp],
-	[https://launchpad.net/pulseaudio-sharp])
+	[https://github.com/RAOF/pulseaudio-sharp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/Context.cs])
