@@ -19,7 +19,9 @@ CSC_V_0 = @echo [CSC] $@;
 		$(addprefix $(srcdir)/, $($*_DLL_RESOURCES)) \
 		$(shell ls $(builddir)/**/AssemblyInfo.cs)
 
-pkglib_DATA = PulseAudio.dll
+
+librarydir = $(libdir)
+library_DATA = PulseAudio.dll
 PulseAudio_DLL_SRC =    src/Channel.cs \
 			src/Context.cs \
 			src/GLib.cs \
