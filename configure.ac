@@ -10,7 +10,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_SRCDIR([src/Context.cs])
 
-AM_INIT_AUTOMAKE([foreign tar-pax dist-lzma 1.11])
+AM_INIT_AUTOMAKE([foreign tar-pax dist-xz 1.11])
 AM_SILENT_RULES([yes])
 
 AC_DEFUN([FOO_PROG_CSC],
