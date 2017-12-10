@@ -70,6 +70,7 @@ namespace Pulseaudio
                 connection_finished.Set ();
             };
             Helper.RunUntilEventSignal (s.Connect, connection_finished, "Timeout waiting for Connect");
+            Assert.Inconclusive ();
             Assert.AreEqual (16, s.ServerAPI);
         }
 
